@@ -189,8 +189,7 @@ DELETE FROM ideas WHERE title='Hack de Programador';
 - criar modo dark / light
 - fazer uma variação de cor
 - hospedar
-- aperfeiçoar o css
-- aperfeiçoar a responsividade
+- permitir crud nas ideias
 
 ## 🛠 Tecnologias
 

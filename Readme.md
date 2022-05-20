@@ -175,6 +175,12 @@ Desenvolver uma aplicação para cadastrar ideias.
   <img alt="CasaCriativa" title="#CasaCriativa" src="./public/img/casa-criativa-3.jpg" width="400px">
 </p> 
 
+## 🚀 Próximo passo
+
+- criar modo dark / light
+- fazer uma variação de cor
+- hospedar
+
 ## 🛠 Tecnologias
 
 As seguintes ferramentas foram usadas na construção do projeto:

@@ -188,9 +188,9 @@ DELETE FROM ideas WHERE title='Hack de Programador';
 
 - responsividade
 - acessibilidade
-- criar modo dark / light
-- fazer uma variação de cor
-- permitir crud nas ideias
+- modo dark / light
+- variação de cores
+- crud de ideias
 - hospedar
 
 ## 🛠 Tecnologias

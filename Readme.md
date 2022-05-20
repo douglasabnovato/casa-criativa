@@ -186,10 +186,12 @@ DELETE FROM ideas WHERE title='Hack de Programador';
 
 ## 🚀 Próximo passo
 
+- responsividade
+- acessibilidade
 - criar modo dark / light
 - fazer uma variação de cor
-- hospedar
 - permitir crud nas ideias
+- hospedar
 
 ## 🛠 Tecnologias
 

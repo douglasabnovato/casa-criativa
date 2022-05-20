@@ -180,6 +180,8 @@ Desenvolver uma aplicação para cadastrar ideias.
 - criar modo dark / light
 - fazer uma variação de cor
 - hospedar
+- aperfeiçoar o css
+- aperfeiçoar a responsividade
 
 ## 🛠 Tecnologias
 

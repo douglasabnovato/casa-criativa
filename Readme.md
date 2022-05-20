@@ -159,6 +159,7 @@ Desenvolver uma aplicação para cadastrar ideias.
 - [x] 5.5.4. Validação no front-end para db: `script.js`
 - [x] 5.5.4.1. não permitir criar nova idéia com o formulário incompleto
 - [x] 5.5.4.2. mensagem de alert do próprio navegador
+- [ ] 5.6. Visualizar dados do db no Beekeeper
 
 ---
 

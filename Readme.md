@@ -160,6 +160,13 @@ Desenvolver uma aplicação para cadastrar ideias.
 - [x] 5.5.4.1. não permitir criar nova idéia com o formulário incompleto
 - [x] 5.5.4.2. mensagem de alert do próprio navegador
 - [ ] 5.6. Visualizar dados do db no Beekeeper
+````sql
+SELECT * FROM ideas;
+
+DELETE FROM ideas WHERE title='Medium';
+
+DELETE FROM ideas WHERE title='Hack de Programador';
+````
 
 ---
 

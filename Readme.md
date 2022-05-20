@@ -3,7 +3,7 @@
 </h1>
 
 <h4 align="center"> 
-	🚧 Casa Criativa 🚀 em construção... 🚧
+	🚧 Casa Criativa 🚀
 </h4> 
 
 <p align="center">

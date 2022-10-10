@@ -1,10 +1,10 @@
-<h1 align="center">
-    <img alt="CasaCriativa" title="#CasaCriativa" src="./public/img/casa-criativa-1.jpg" />
-</h1>
-
 <h4 align="center"> 
 	🚧 Casa Criativa 🚀
 </h4> 
+
+<h1 align="center">
+    <img alt="CasaCriativa" title="#CasaCriativa" src="./public/img/casa-criativa-1.jpg" />
+</h1>
 
 <p align="center">
   <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/douglasabnovato/casa-criativa?color=%2304D361">

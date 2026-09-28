@@ -1,0 +1,14 @@
+{% if ideas.length == 0 %}
+    <p class="empty">Nenhuma ideia cadastrada ainda. Que tal ser a primeira pessoa a contribuir?</p>
+{% endif %}
+{% for idea in ideas %}
+    <article class="idea">
+        <img src="{{ idea.image }}" alt="" width="90" height="90" loading="lazy" referrerpolicy="no-referrer">
+        <div class="content">
+            <h3>{{ idea.title }}</h3>
+            <p class="category">{{ idea.category }}</p>
+            <div class="description">{{ idea.description }}</div>
+            <a href="{{ idea.link }}" target="_blank" rel="noopener noreferrer">Ir para a ideia<span class="sr-only"> {{ idea.title }} (abre em nova aba)</span></a>
+        </div>
+    </article>
+{% endfor %}

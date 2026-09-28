@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}<title>{{ status }} - Casa Criativa</title>{% endblock title %}
+{% block content %}
+<main id="conteudo" class="error-page">
+    <h1>{{ status }}</h1>
+    <p>{{ message }}</p>
+    <a class="button" href="/">Voltar ao início</a>
+</main>
+{% endblock %}

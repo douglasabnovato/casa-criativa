@@ -1,2 +1,7 @@
-/node_modules
-/.netlify
+node_modules/
+.netlify/
+data/
+*.sqlite-wal
+*.sqlite-shm
+.env
+ws.db*

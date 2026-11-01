@@ -6,6 +6,15 @@
 
 <p align="center"><img alt="Casa Criativa" src="./public/img/casa-criativa-1.jpg" width="720"></p>
 
+## 🧠 O que aprendi
+
+> Proposta de 01/11/2026, escrita a partir do código e das dependências. Ajuste com a sua experiência.
+
+- Renderizar páginas no servidor com Express e Nunjucks.
+- Guardar ideias em SQLite com `better-sqlite3`.
+- Escapar conteúdo e aceitar somente links `http(s)`.
+- Limitar envios e testar com `node --test`.
+
 ## Problema e proposta
 
 Quem passa longos períodos em casa procura o que fazer. A Casa Criativa reúne ideias (cursos, brincadeiras, filmes, livros) cadastradas pela própria comunidade.

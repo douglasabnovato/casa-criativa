@@ -1,4 +1,4 @@
-> **Projeto de estudo.** Estado conferido em 30/10/2026: 1 endereço(s) citado(s) abaixo não responde(m). Detalhes em [docs/AVALIACAO.md](docs/AVALIACAO.md) e próximos passos em [docs/PLANO-ESTRATEGICO.md](docs/PLANO-ESTRATEGICO.md).
+> **Projeto de estudo.** Estado conferido em 31/10/2026: os endereços que seguem fora do ar foram retirados deste README. Detalhes em [docs/AVALIACAO.md](docs/AVALIACAO.md) e próximos passos em [docs/PLANO-ESTRATEGICO.md](docs/PLANO-ESTRATEGICO.md).
 
 <h1 align="center">Casa Criativa</h1>
 
@@ -35,9 +35,9 @@ npm test               # 8 testes
 
 Para reaproveitar as ideias do banco antigo, use `DATABASE_FILE=./ws.db` na primeira execução: a migration converte a tabela e descarta linhas inválidas.
 
-## Em produção
+## Publicação
 
-- **URL:** https://casa-criativa.onrender.com (Render, web service gratuito, blueprint `render.yaml`, deploy automático a cada push na `master`).
+- **Publicação:** Fora do ar desde a conferência de 31/10/2026; para ver o projeto, rode localmente (seção "Como rodar"). O `render.yaml` continua no repositório.
 - GitHub Pages não serve aqui: o projeto tem servidor Express e banco SQLite, e o Pages só publica arquivos estáticos.
 - O SQLite de produção fica em `/tmp/casa-criativa.sqlite`: as ideias cadastradas **somem a cada reinício ou deploy** e o banco volta às 2 ideias iniciais.
 - Passo a passo completo: [docs/DEPLOY.md](docs/DEPLOY.md).

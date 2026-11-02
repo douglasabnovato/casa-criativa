@@ -14,7 +14,7 @@
 | 6 | Falhas tratadas | Erro, vazio e carregamento têm resposta clara | Parcial: `views/error.html` existe; não exercitada no navegador. |
 | 7 | Desempenho aceitável | LCP de até 2,5 s no celular | Não medido: Sem publicação verificada neste ciclo. |
 | 8 | Acessibilidade básica | axe e teclado | Parcial: Sem violações graves; restam avisos moderados de região e ordem de títulos. Rolagem corrigida em 375 px (antes, 229 px); foco visível. |
-| 9 | Segurança e conformidade | Riscos decididos | Atende: `npm audit --omit=dev` sem alertas. `ws.db` segue versionado; não conferi o conteúdo. |
+| 9 | Segurança e conformidade | Riscos decididos | Atende: `npm audit --omit=dev` sem alertas. `ws.db` tem 2 ideias, sem dado pessoal, e segue versionado porque o README o reaproveita. |
 | 10 | Entrega confiável | CI verde antes de entrar na principal | Atende: CI verde no PR deste ciclo; a principal segue sem proteção. |
 | 11 | Testes dos fluxos críticos | Testes automatizados no CI | Atende: Testes automatizados rodam no CI. |
 | 12 | Documentação honesta | O README ensina a rodar | Atende: Comandos conferidos com o `package.json`; aviso de estudo no README. |

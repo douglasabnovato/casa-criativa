@@ -318,6 +318,8 @@ button.secondary{background:#ffffff22;color:#fff;border:1px solid #fff;grid-colu
 /* Celular: sem rolagem horizontal */
 @media (max-width: 640px) {
     body { display: block; }
+    #container { display: block; width: auto; max-width: 100%; margin: 0; padding: 0 16px; box-sizing: border-box; }
+    #intro { width: auto; max-width: 100%; margin: 0; padding: 0; }
     #last-ideas, section.last-ideas, section#ideas { display: block; width: auto; max-width: 100%; margin-left: 0; margin-right: 0; padding-left: 16px; padding-right: 16px; box-sizing: border-box; }
     .idea { flex-direction: column; padding: 20px; margin-bottom: 16px; }
     .idea img { margin: 0 0 16px; }

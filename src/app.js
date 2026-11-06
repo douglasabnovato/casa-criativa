@@ -40,7 +40,14 @@ function createApp({ ideas, trustProxy = false }) {
   });
 
   app.get("/ideias", (req, res) => {
-    res.render("ideias.html", { ideas: ideas.latest(LIST_LIMIT), created: req.query.criada === "1" });
+    const raw = typeof req.query.categoria === "string" ? req.query.categoria.trim().slice(0, 40) : "";
+    const list = raw ? ideas.byCategory(raw, LIST_LIMIT) : ideas.latest(LIST_LIMIT);
+    res.render("ideias.html", {
+      ideas: list,
+      categories: ideas.categories(),
+      selected: raw,
+      created: req.query.criada === "1",
+    });
   });
 
   app.post(["/", "/ideias"], postLimiter, (req, res) => {
@@ -48,6 +55,7 @@ function createApp({ ideas, trustProxy = false }) {
     if (Object.keys(errors).length > 0) {
       return res.status(422).render("ideias.html", {
         ideas: ideas.latest(LIST_LIMIT),
+        categories: ideas.categories(),
         form: value,
         errors,
         openModal: true,

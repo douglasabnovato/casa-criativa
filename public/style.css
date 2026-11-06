@@ -327,3 +327,9 @@ button.secondary{background:#ffffff22;color:#fff;border:1px solid #fff;grid-colu
     #page-ideas nav li { margin-left: 0; }
     section#ideas .idea { margin-bottom: 16px; }
 }
+
+/* Filtro por categoria (ciclo de 03/11/2026) */
+#page-ideas main{margin:0}
+#filtro ul{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;list-style:none;padding:0;margin:24px 0 0}
+#filtro a{display:inline-block;padding:6px 12px;border:1px solid #c2185b;border-radius:16px;color:#a3154d;text-decoration:none;font-size:14px}
+#filtro a[aria-current="page"]{background:#a3154d;color:#fff}

@@ -16,13 +16,29 @@
             </ul>
         </nav>
     </header>
-    <section id="title">
-        <p>em exibição</p>
-        <h1>Ideias</h1>
-    </section>
     <main id="conteudo">
-        <section id="ideas" aria-labelledby="title">
-            {% include "idea-list.html" %}
+        <section id="title">
+            <p>em exibição</p>
+            <h1 id="titulo-ideias">Ideias</h1>
+        </section>
+        {% if categories and categories.length > 1 %}
+        <nav id="filtro" aria-label="Filtrar por categoria">
+            <h2 class="sr-only">Filtrar por categoria</h2>
+            <ul>
+                <li><a href="/ideias" {% if not selected %}aria-current="page"{% endif %}>Todas</a></li>
+                {% for c in categories %}
+                <li><a href="/ideias?categoria={{ c.name | urlencode }}" {% if selected | lower == c.name | lower %}aria-current="page"{% endif %}>{{ c.name }} ({{ c.total }})</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+        <section id="ideas" aria-labelledby="titulo-ideias">
+            <h2 class="sr-only">{% if selected %}Ideias da categoria {{ selected }}{% else %}Todas as ideias{% endif %}</h2>
+            {% if selected and ideas.length == 0 %}
+                <p class="empty">Nenhuma ideia nesta categoria. <a href="/ideias">Ver todas</a>.</p>
+            {% else %}
+                {% include "idea-list.html" %}
+            {% endif %}
         </section>
     </main>
     <footer id="footer">

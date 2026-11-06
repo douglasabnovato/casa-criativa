@@ -87,4 +87,46 @@ test("migração preserva ideias válidas de banco legado", () => {
   assert.equal(rows.length, 1);
   assert.equal(rows[0].title, valid.title);
 });
+
+test("filtro por categoria mostra só a categoria escolhida, com contagem", async () => {
+  const { app, ideas } = buildApp();
+  ideas.create(valid);
+  ideas.create({ ...valid, title: "Roda de leitura" });
+  const res = await request(app).get("/ideias?categoria=leitura").expect(200);
+  assert.equal((res.text.match(/<article class="idea">/g) || []).length, 2);
+  assert.match(res.text, /Leitura \(2\)/);
+  assert.match(res.text, /aria-current="page">Leitura/);
+  const vazio = await request(app).get("/ideias?categoria=Inexistente").expect(200);
+  assert.match(vazio.text, /Nenhuma ideia nesta categoria/);
+});
+
+test("lista de ideias segue a ordem de títulos h1, h2, h3", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias").expect(200);
+  const corpo = res.text.replace(/<div id="modal"[\s\S]*$/, "");
+  const niveis = [...corpo.matchAll(/<h([1-6])/g)].map((m) => Number(m[1]));
+  niveis.forEach((n, i) => assert.ok(i === 0 || n - niveis[i - 1] <= 1, `salto de h${niveis[i - 1]} para h${n}`));
+  assert.match(res.text, /<main id="conteudo">\s*<section id="title">/);
+});
+
+test("home marca cabeçalho e rodapé como landmarks", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/").expect(200);
+  assert.match(res.text, /<header role="banner">/);
+  assert.match(res.text, /role="contentinfo"/);
+});
+
+test("falha no banco responde 500 com a página de erro", async () => {
+  const quebrado = { latest: () => { throw new Error("banco fora"); }, count: () => 0, categories: () => [] };
+  const app = createApp({ ideas: quebrado });
+  const original = console.error;
+  console.error = () => {};
+  try {
+    const res = await request(app).get("/").expect(500);
+    assert.match(res.text, /Não foi possível concluir agora/);
+    assert.match(res.text, /Voltar ao início/);
+  } finally {
+    console.error = original;
+  }
+});
 /* Fim de app.test.js */

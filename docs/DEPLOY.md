@@ -49,8 +49,7 @@ Branch principal: **`master`**.
 ### Etapa 1 · Validar localmente (Git Bash)
 
 1. `cd /c/ambiente-projeto/ser-mvp/casa-criativa`
-2. Apagar os arquivos substituídos (eles saem do Git e do disco):
-   `git rm db.js server.js views/allIdeas.html yarn.lock .netlify/state.json`
+2. Arquivos substituídos (`db.js`, `server.js`, `views/allIdeas.html`, `yarn.lock`): **removidos em 06/11/2026** (PR do ciclo de 03/11).
 3. Opcional, recomendado: parar de versionar o banco antigo (o arquivo continua no seu disco):
    `git rm --cached ws.db`
 4. `npm install` (gera o `node_modules` a partir do `package-lock.json` novo)
@@ -60,8 +59,7 @@ Branch principal: **`master`**.
 
 ### Etapa 2 · Subir para o GitHub
 
-1. Ativar o CI (a pasta `.github` é protegida para a ferramenta que preparou o projeto, então o arquivo veio em `ci/`):
-   `mkdir -p .github/workflows && mv ci/github-actions-ci.yml .github/workflows/ci.yml && rmdir ci`
+1. CI: já ativo em `.github/workflows/ci.yml`. A cópia antiga em `ci/` foi removida em 06/11/2026.
 2. `git status` (não podem aparecer `node_modules/`, `data/`, `.env` nem `ws.db` como arquivo novo)
 3. `git add -A`
 4. `git commit -m "feat(deploy): Node 22, SQLite em /tmp, deploy automático no Render e CI"`

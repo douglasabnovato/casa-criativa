@@ -49,6 +49,8 @@ test("cadastra uma ideia pelo modal e a encontra na lista e no filtro", async ({
 });
 
 test("link javascript: mostra o erro no campo, com foco nele, e não envia", async ({ page }) => {
+  const posts = [];
+  page.on("request", (req) => { if (req.method() === "POST") posts.push(req.url()); });
   await page.goto("/");
   await page.getByRole("button", { name: "+ Adicionar ideia" }).click();
   await preencher(page, { ...base, title: "Ideia com link ruim", link: "javascript:alert(1)" });
@@ -59,6 +61,7 @@ test("link javascript: mostra o erro no campo, com foco nele, e não envia", asy
   await expect(campo).toHaveAttribute("aria-invalid", "true");
   await expect(page.locator("#erro-link")).toHaveText(/http:\/\/ ou https:\/\//);
   await expect(page).toHaveURL(/\/$/);
+  expect(posts).toEqual([]);
 });
 
 test("Esc fecha o modal e devolve o foco ao botão", async ({ page }) => {

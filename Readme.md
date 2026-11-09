@@ -15,27 +15,25 @@
 - Escapar conteúdo e aceitar somente links `http(s)`.
 - Limitar envios e testar com `node --test`.
 
-## Estado e próximos passos (ciclo de 03/11/2026)
+## Estado e próximos passos (ciclo de 07/11/2026)
 
-**O que foi feito** (06/11/2026, PRs #52 e #53)
-- Filtro por categoria em `/ideias`, com contagem e opção "Todas".
-- Landmarks na home e ordem de títulos h1 → h2 → h3 na lista.
-- Teste da página 500 com banco que falha; agora são 12 testes.
-- CI também nos PRs para `developer/**`.
-- Arquivos legados removidos (`server.js`, `db.js`, `ci/`, `yarn.lock`, `allIdeas.html`).
-- `docs/MVP.md` revisto pela régua de estudo: 7 de 10 critérios aplicáveis.
+Projeto de estudo (N1): 9 de 10 critérios aplicáveis atendidos. **Finalizado**: o que falta (#46, proteger a `master`) depende do responsável.
+
+**O que foi feito**
+- 06/11 (PRs #52 e #53): filtro por categoria, landmarks e ordem de títulos, teste da página 500, CI nos PRs para `developer/**`, arquivos legados removidos.
+- 07/11 (PR #54): testes de interface com Playwright no CI, cobrindo o cadastro pelo modal, o filtro, o erro de link e o teclado (#48); axe em `/`, `/ideias` e 404, com o modal aberto e com erros, nos modos claro e escuro (#49); Tab preso dentro do modal aberto.
 
 **O que queremos fazer**
-- [#48](https://github.com/douglasabnovato/casa-criativa/issues/48) Teste do cadastro no navegador (Playwright).
-- [#49](https://github.com/douglasabnovato/casa-criativa/issues/49) axe automático nas páginas.
 - [#50](https://github.com/douglasabnovato/casa-criativa/issues/50) Busca por texto na lista.
 - [#51](https://github.com/douglasabnovato/casa-criativa/issues/51) `better-sqlite3` 12 e branches do Dependabot.
+- [#55](https://github.com/douglasabnovato/casa-criativa/issues/55) Testes de interface também em 375 px.
 - [#46](https://github.com/douglasabnovato/casa-criativa/issues/46) Proteger a `master` (responsável).
+- [#56](https://github.com/douglasabnovato/casa-criativa/issues/56) Mesclar o ciclo de 07/11 na `master` (responsável).
 - [#47](https://github.com/douglasabnovato/casa-criativa/issues/47) Decidir a publicação: o link do Render não respondeu em 06/11 (responsável).
 
 **Onde está a documentação**
 - [docs/MVP.md](docs/MVP.md): critérios e estado.
-- [docs/PLANO-DE-ACAO.md](docs/PLANO-DE-ACAO.md): seção "Ciclo de 03/11/2026", com pesquisa, backlog e engenharia.
+- [docs/PLANO-DE-ACAO.md](docs/PLANO-DE-ACAO.md): seção "Ciclo de 07/11/2026", com pesquisa, backlog e engenharia.
 
 ## Problema e proposta
 
@@ -53,7 +51,7 @@ Quem passa longos períodos em casa procura o que fazer. A Casa Criativa reúne 
 
 ## Stack
 
-Node 22 · Express 4 · Nunjucks · SQLite (better-sqlite3) · helmet · node:test + supertest.
+Node 22 · Express 4 · Nunjucks · SQLite (better-sqlite3) · helmet · node:test + supertest · Playwright + axe-core.
 
 ## Como rodar
 
@@ -61,7 +59,9 @@ Node 22 · Express 4 · Nunjucks · SQLite (better-sqlite3) · helmet · node:te
 npm install
 cp .env.example .env   # opcional
 npm run dev            # http://localhost:3000
-npm test               # 12 testes
+npm test               # 12 testes de unidade
+npx playwright install chromium   # uma vez
+npm run test:e2e       # 20 testes no navegador (fluxo e axe)
 ```
 
 Para reaproveitar as ideias do banco antigo, use `DATABASE_FILE=./ws.db` na primeira execução: a migration converte a tabela e descarta linhas inválidas.

@@ -77,8 +77,27 @@
   document.querySelectorAll("[data-close-modal]").forEach(function (button) {
     button.addEventListener("click", closeModal);
   });
+  /* Mantém o Tab dentro do modal aberto (padrão de diálogo modal do WAI-ARIA APG) */
+  function trapTab(event) {
+    const focusable = Array.from(modal.querySelectorAll("input, textarea, button, a[href]")).filter(function (el) {
+      return !el.disabled && el.offsetParent !== null;
+    });
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !modal.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !modal.hidden) closeModal();
+    if (modal.hidden) return;
+    if (event.key === "Escape") closeModal();
+    else if (event.key === "Tab") trapTab(event);
   });
   document.querySelectorAll(".idea img").forEach(function (img) {
     img.addEventListener("error", function () { img.src = "/img/logo.png"; }, { once: true });

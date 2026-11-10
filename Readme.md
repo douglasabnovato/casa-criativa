@@ -17,7 +17,7 @@
 
 ## Estado e próximos passos (ciclo de 07/11/2026)
 
-Projeto de estudo (N1): 9 de 10 critérios aplicáveis atendidos. **Finalizado**: o que falta (#46, proteger a `master`) depende do responsável.
+Projeto de estudo (N1): 10 de 10 critérios aplicáveis atendidos. **Finalizado**: sim. A `master` está protegida desde 10/11/2026 (exige PR e bloqueia force push, #46).
 
 **O que foi feito**
 - 06/11 (PRs #52 e #53): filtro por categoria, landmarks e ordem de títulos, teste da página 500, CI nos PRs para `developer/**`, arquivos legados removidos.
@@ -27,7 +27,7 @@ Projeto de estudo (N1): 9 de 10 critérios aplicáveis atendidos. **Finalizado**
 - [#50](https://github.com/douglasabnovato/casa-criativa/issues/50) Busca por texto na lista.
 - [#51](https://github.com/douglasabnovato/casa-criativa/issues/51) `better-sqlite3` 12 e branches do Dependabot.
 - [#55](https://github.com/douglasabnovato/casa-criativa/issues/55) Testes de interface também em 375 px.
-- [#46](https://github.com/douglasabnovato/casa-criativa/issues/46) Proteger a `master` (responsável).
+- [#46](https://github.com/douglasabnovato/casa-criativa/issues/46) Proteger a `master`: feito em 10/11/2026 (ruleset `principal-protegida`); a issue fecha no merge da `master`.
 - [#56](https://github.com/douglasabnovato/casa-criativa/issues/56) Mesclar o ciclo de 07/11 na `master` (responsável).
 - [#47](https://github.com/douglasabnovato/casa-criativa/issues/47) Decidir a publicação: o link do Render não respondeu em 06/11 (responsável).
 

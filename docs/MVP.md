@@ -2,10 +2,10 @@
 
 > Criado em 02/11/2026. Revisto em 09/11/2026 (ciclo de 07/11/2026). **Nível: Estudo (N1).** Os critérios 5 e 7 não se aplicam ao N1 e saem da conta. Testado no Windows com Node 24.22.1 (`better-sqlite3` 12 instalado sem gravar no lock) e no CI com Node 22 no `ubuntu-latest`. Não houve teste com pessoas nem em aparelho real.
 
-**Resumo:** 9 de 10 aplicáveis atendidos
+**Resumo:** 10 de 10 aplicáveis atendidos
 **Finalizado:** sim
 
-O critério que falta, 10, depende do responsável e tem issue com o rótulo `depende-do-responsavel` (#46).
+O critério 10 passou a "Atende" em 10/11/2026, com a `master` protegida (#46).
 
 ## Critérios (07/11/2026)
 
@@ -20,7 +20,7 @@ O critério que falta, 10, depende do responsável e tem issue com o rótulo `de
 | 7 | Desempenho aceitável | LCP de até 2,5 s no celular | Não se aplica (N1). | Decisão 2 do processo |
 | 8 | Acessibilidade básica | axe e teclado | Atende: axe (todas as regras, qualquer gravidade) sem violações em `/`, `/ideias` e 404, com o modal fechado, aberto e com erros, nos modos claro e escuro; Tab e Shift+Tab ficam dentro do modal (novo neste ciclo); Esc devolve o foco. | `tests/e2e/axe.spec.js` e `fluxo.spec.js` no CI do PR #54, 09/11/2026 |
 | 9 | Segurança e conformidade | Riscos decididos | Atende: `npm audit --omit=dev` sem alertas; `ws.db` sem dado pessoal; CSP do `helmet`; só links `http(s)`. | 06/11/2026 |
-| 10 | Entrega confiável | CI verde antes de entrar na principal | Parcial: CI (testes de unidade e de interface) roda em PR e push para `master` e `developer/**`; a `master` segue sem proteção. | #46 |
+| 10 | Entrega confiável | CI verde antes de entrar na principal | Atende: o workflow `CI` (testes de unidade e de interface) roda em PR e push para `master` e `developer/**`; a `master` está protegida (exige PR, bloqueia force push e exclusão). | `gh api repos/douglasabnovato/casa-criativa/rulesets`: ruleset `principal-protegida` ativo, 10/11/2026; #46 |
 | 11 | Testes dos fluxos críticos | Testes automatizados no CI | Atende: 12 testes de unidade e 20 de interface (10 por modo de cor) no CI. | CI do PR #54, 09/11/2026 |
 | 12 | Documentação honesta | O README ensina a rodar | Atende: comandos conferidos com o `package.json`, inclusive `npm run test:e2e`; estado do ciclo de 07/11. | README, 09/11/2026 |
 

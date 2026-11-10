@@ -5,3 +5,5 @@ data/
 *.sqlite-shm
 .env
 ws.db*
+test-results/
+playwright-report/

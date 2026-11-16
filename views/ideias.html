@@ -21,20 +21,30 @@
             <p>em exibição</p>
             <h1 id="titulo-ideias">Ideias</h1>
         </section>
+        <form id="busca" role="search" action="/ideias" method="get" aria-label="Buscar ideias">
+            <label for="campo-busca">Buscar ideias</label>
+            <div class="busca-linha">
+                <input id="campo-busca" type="search" name="q" value="{{ q }}" maxlength="80" autocomplete="off">
+                {% if selected %}<input type="hidden" name="categoria" value="{{ selected }}">{% endif %}
+                <button type="submit" class="button">Buscar</button>
+            </div>
+        </form>
         {% if categories and categories.length > 1 %}
         <nav id="filtro" aria-label="Filtrar por categoria">
             <h2 class="sr-only">Filtrar por categoria</h2>
             <ul>
-                <li><a href="/ideias" {% if not selected %}aria-current="page"{% endif %}>Todas</a></li>
+                <li><a href="/ideias{% if q %}?q={{ q | urlencode }}{% endif %}" {% if not selected %}aria-current="page"{% endif %}>Todas</a></li>
                 {% for c in categories %}
-                <li><a href="/ideias?categoria={{ c.name | urlencode }}" {% if selected | lower == c.name | lower %}aria-current="page"{% endif %}>{{ c.name }} ({{ c.total }})</a></li>
+                <li><a href="/ideias?categoria={{ c.name | urlencode }}{% if q %}&amp;q={{ q | urlencode }}{% endif %}" {% if selected | lower == c.name | lower %}aria-current="page"{% endif %}>{{ c.name }} ({{ c.total }})</a></li>
                 {% endfor %}
             </ul>
         </nav>
         {% endif %}
         <section id="ideas" aria-labelledby="titulo-ideias">
-            <h2 class="sr-only">{% if selected %}Ideias da categoria {{ selected }}{% else %}Todas as ideias{% endif %}</h2>
-            {% if selected and ideas.length == 0 %}
+            <h2 class="sr-only">{% if q %}Resultado da busca por “{{ q }}”{% if selected %} na categoria {{ selected }}{% endif %}{% elif selected %}Ideias da categoria {{ selected }}{% else %}Todas as ideias{% endif %}</h2>
+            {% if q and ideas.length == 0 %}
+                <p class="empty">Nenhuma ideia encontrada para “{{ q }}”{% if selected %} na categoria {{ selected }}{% endif %}. <a href="/ideias">Ver todas</a>.</p>
+            {% elif selected and ideas.length == 0 %}
                 <p class="empty">Nenhuma ideia nesta categoria. <a href="/ideias">Ver todas</a>.</p>
             {% else %}
                 {% include "idea-list.html" %}

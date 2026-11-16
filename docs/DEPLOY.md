@@ -1,88 +1,87 @@
 # Deploy · Casa Criativa
 
-Plano de ação para publicar o catálogo de ideias em hospedagem gratuita.
+Como publicar o catálogo de ideias em hospedagem gratuita. Revisto em 16/11/2026.
 
-## 1. Desafio
+**Estado em 16/11/2026:** fora do ar. `curl -s -o /dev/null -m 60 -w "%{http_code}" https://casa-criativa.onrender.com/health` devolveu `000` (sem resposta em 60 s). Criar ou religar o serviço é do responsável (#47). Em N1 a publicação não é obrigatória.
 
-Colocar no ar, sem custo, uma aplicação Express + Nunjucks + SQLite (better-sqlite3) que recebe cadastros públicos de ideias, mantendo a proteção contra spam (limite de envios por IP) e deixando claro que o banco do plano gratuito é temporário.
-
-## 2. Conteúdo
-
-### Decisão de hospedagem
+## 1. Decisão de hospedagem
 
 | Opção | Resultado |
 |---|---|
-| **Render, 1 web service gratuito (escolhida)** | Roda o servidor Express; blueprint `render.yaml` já no repositório; deploy automático a cada push |
+| **Render, 1 web service gratuito (escolhida)** | Roda o servidor Express; Blueprint `render.yaml` no repositório; deploy automático a cada commit na `master` |
 | GitHub Pages | Não serve: só publica arquivos estáticos, e o projeto precisa de servidor Express e banco |
-| Netlify (antiga `.netlify/`) | Não executa servidor Express contínuo; por isso `.netlify/state.json` sai do repositório |
+| Netlify | Não executa servidor Express contínuo. O `.netlify/state.json` antigo saiu do repositório em 16/11/2026 |
+| Vercel | Funções serverless sem disco: o SQLite não teria onde gravar |
 | VPS ou disco persistente pago | Fora da regra do portfólio (só hospedagem gratuita) |
 
-### O que foi ajustado para produção
+## 2. O que o `render.yaml` já define
 
-| Mudança | Arquivo | Por quê |
+| Chave | Valor | Por quê |
 |---|---|---|
-| `NODE_VERSION` `22` | `render.yaml` | O Node 20 saiu de suporte em abr/2026 |
-| `autoDeployTrigger: commit` | `render.yaml` | Cada push na `master` publica sozinho |
-| `NODE_ENV=production` | `render.yaml` | Liga o cache de templates do Nunjucks e o `npm ci` deixa de instalar dependências de teste |
-| `DATABASE_FILE=/tmp/casa-criativa.sqlite` | `render.yaml` | Caminho gravável e explícito para o SQLite no Render |
-| `TRUST_PROXY=1` (já existia) | `render.yaml` | Sem isso o limite de 10 envios/min contaria todos os visitantes como um só IP (o do proxy do Render) |
-| CI com Node 22 | `ci/github-actions-ci.yml` → mover para `.github/workflows/ci.yml` | Testes e `npm audit` a cada push, na mesma versão da produção |
-| `ws.db*` no `.gitignore` | `.gitignore` | Depois do `git rm --cached ws.db`, o `git add -A` não volta a versionar o banco |
-| Seção "Em produção" | `Readme.md` | URL, hospedagem e aviso de dados temporários |
+| `plan` | `free` | Só hospedagem gratuita |
+| `buildCommand` | `npm ci` | Instala pelo `package-lock.json`; com `NODE_ENV=production`, sem as dependências de teste |
+| `startCommand` | `npm start` | `node src/server.js` |
+| `healthCheckPath` | `/health` | O Render só troca a versão quando `/health` responde |
+| `autoDeployTrigger` | `commit` | Cada merge na `master` publica sozinho |
+| `NODE_VERSION` | `22` | A mesma versão do job `raiz` do CI (o CI também testa no Node 24) |
+| `NODE_ENV` | `production` | Liga o cache de templates do Nunjucks |
+| `TRUST_PROXY` | `1` | Sem isso, o limite de 10 envios por minuto contaria todos os visitantes como um só IP (o do proxy do Render) |
+| `DATABASE_FILE` | `/tmp/casa-criativa.sqlite` | Caminho gravável no plano gratuito |
 
-### Limitações do plano gratuito
+Nenhum segredo é pedido: o app não usa chave de serviço externo nem banco remoto.
 
-- **Os dados somem a cada reinício ou deploy**: o disco do Render Free é temporário. O banco volta às 2 ideias iniciais (seed) sempre que o serviço reinicia, dorme e acorda em outra máquina, ou recebe um novo deploy. Para persistir, o caminho gratuito seria migrar para PostgreSQL (Neon), o que é mudança de arquitetura (decisão pendente).
+## 3. Limites do plano gratuito
+
+- **Os dados somem a cada reinício ou deploy**: o disco do Render Free é temporário. O banco volta às 2 ideias iniciais sempre que o serviço reinicia, dorme e acorda em outra máquina, ou recebe um deploy. Banco persistente é mudança de arquitetura e fica fora do MVP.
 - O serviço dorme após 15 min sem acesso e leva cerca de 1 min para acordar.
 - As 750 horas gratuitas por mês são da conta inteira do Render, somando todos os serviços.
 
-### Pontos de atenção (segurança e LGPD)
+## 4. Segurança e LGPD
 
-- O cadastro é público e sem login: qualquer pessoa pode publicar uma ideia. Há validação, links só `http(s)`, conteúdo escapado e limite de 10 envios por minuto por IP, mas não há moderação.
-- O formulário não pede dados pessoais (título, categoria, imagem, descrição e link). Mesmo assim, as imagens são URLs externas: o navegador do visitante carrega imagens de terceiros.
-- `ws.db` tem 2 ideias antigas; não versione bancos (é o objetivo do `git rm --cached`).
+- O cadastro é público e sem login. Há validação, links só `http(s)`, conteúdo escapado, CSP do `helmet` e limite de 10 envios por minuto por IP. Não há moderação (fora do MVP).
+- O formulário não pede dado pessoal: título, categoria, imagem, descrição e link.
+- As imagens são URLs externas: o navegador de quem visita carrega imagens de terceiros, com `referrerpolicy="no-referrer"`.
 
-## 3. Solução (passo a passo)
+## 5. Passo a passo (responsável)
 
-Branch principal: **`master`**.
+### Etapa 1 · Conferir localmente (opcional)
 
-### Etapa 1 · Validar localmente (Git Bash)
+1. `git clone https://github.com/douglasabnovato/casa-criativa && cd casa-criativa`
+2. `npm ci` (Node 22 ou 24)
+3. `npm test` (esperado: 17 testes passando)
+4. Simular produção: `PORT=3000 NODE_ENV=production TRUST_PROXY=1 DATABASE_FILE=./data/producao-local.sqlite npm start`.
+5. Abrir `http://localhost:3000/health`. Esperado: `{"status":"ok","ideas":2}`. `Ctrl+C` para sair.
 
-1. `cd /c/ambiente-projeto/ser-mvp/casa-criativa`
-2. Arquivos substituídos (`db.js`, `server.js`, `views/allIdeas.html`, `yarn.lock`): **removidos em 06/11/2026** (PR do ciclo de 03/11).
-3. Opcional, recomendado: parar de versionar o banco antigo (o arquivo continua no seu disco):
-   `git rm --cached ws.db`
-4. `npm install` (gera o `node_modules` a partir do `package-lock.json` novo)
-5. `npm test` (esperado: 8 testes passando)
-6. Opcional, para migrar as 2 ideias antigas para o banco local novo: `DATABASE_FILE=./ws.db npm start` uma vez, depois `Ctrl+C`.
-7. Simular produção: `PORT=3000 NODE_ENV=production TRUST_PROXY=1 DATABASE_FILE=./data/producao-local.sqlite npm start` (no Render o arquivo fica em `/tmp`; aqui vai para `data/`, que o Git ignora) e abrir `http://localhost:3000/health` (esperado: `{"status":"ok","ideas":2}`). `Ctrl+C` para sair.
+### Etapa 2 · Conferir a `master`
 
-### Etapa 2 · Subir para o GitHub
-
-1. CI: já ativo em `.github/workflows/ci.yml`. A cópia antiga em `ci/` foi removida em 06/11/2026.
-2. `git status` (não podem aparecer `node_modules/`, `data/`, `.env` nem `ws.db` como arquivo novo)
-3. `git add -A`
-4. `git commit -m "feat(deploy): Node 22, SQLite em /tmp, deploy automático no Render e CI"`
-5. `git push origin master`
-6. No GitHub, aba **Actions**: o CI precisa ficar verde.
+1. O código chega à `master` só por PR (a `master` é protegida). Abrir **Actions** e conferir que o último run do workflow **CI** na `master` está verde.
 
 ### Etapa 3 · Criar o serviço no Render
 
-1. Entrar em **render.com** com a conta do GitHub e autorizar o repositório `casa-criativa`.
-2. **New → Blueprint** e escolher `douglasabnovato/casa-criativa` (branch `master`).
-3. Conferir o serviço `casa-criativa`, plano **Free**, e as variáveis já preenchidas pelo blueprint: `NODE_VERSION=22`, `NODE_ENV=production`, `TRUST_PROXY=1`, `DATABASE_FILE=/tmp/casa-criativa.sqlite`. Nenhum segredo é pedido.
-4. **Apply** e acompanhar **Logs** até aparecer `Casa Criativa em http://localhost:10000` (3 a 6 min; o `better-sqlite3` compila na primeira vez).
+1. Entrar em [dashboard.render.com](https://dashboard.render.com) com a conta do GitHub.
+2. Se o serviço `casa-criativa` antigo aparecer na lista, abrir e conferir **Events**: se estiver suspenso, clicar em **Resume Service** e pular para a Etapa 4.
+3. Senão: **New +** → **Blueprint**.
+4. Em **Connect a repository**, escolher `douglasabnovato/casa-criativa`. Se ele não aparecer, clicar em **Configure account** e liberar o repositório no GitHub.
+5. **Blueprint Name:** `casa-criativa`. **Branch:** `master`.
+6. Conferir na prévia: 1 web service `casa-criativa`, plano **Free**, e as 4 variáveis da seção 2. Nenhum campo de segredo aparece.
+7. Clicar em **Deploy Blueprint**.
+8. Abrir o serviço → **Logs** e esperar `Casa Criativa em http://localhost:10000` (3 a 6 min).
 
 ### Etapa 4 · Conferir no ar
 
-1. `https://casa-criativa.onrender.com/health` responde `{"status":"ok","ideas":2}`.
-2. A home mostra as 2 ideias iniciais e o logo carrega.
-3. `/ideias` lista as ideias; cadastrar uma ideia de teste redireciona para `/ideias?criada=1` e o total em `/health` sobe para 3.
-4. Enviar o formulário vazio mostra os erros por campo.
-5. Uma URL inexistente (ex.: `/xyz`) mostra a página 404 própria.
-6. Em **Manual Deploy → Restart service**, `/health` volta a `ideas: 2` (confirma o comportamento de disco temporário).
+1. Copiar a URL no topo da página do serviço. **Atenção:** o Render pode acrescentar um sufixo (ex.: `casa-criativa-ab12.onrender.com`) quando o nome já existe em outra conta. Usar a URL que o painel mostra.
+2. `curl -s -o /dev/null -w "%{http_code}" <URL>/health` devolve `200`, e `<URL>/health` mostra `{"status":"ok","ideas":2}`.
+3. A home mostra as 2 ideias iniciais e o logo.
+4. `/ideias?q=programação` mostra só "Fundamentos de Programação".
+5. Cadastrar uma ideia de teste: a página vai para `/ideias?criada=1`, e `/health` mostra `ideas: 3`.
+6. Uma URL inexistente (ex.: `/xyz`) mostra a página 404 própria.
 
-### Etapa 5 · Fechar
+### Etapa 5 · Registrar
 
-1. Se a URL real for diferente de `https://casa-criativa.onrender.com`, corrigir no `Readme.md`, commit e push (o Render publica sozinho).
-2. No GitHub, **About → Website**: colar a URL.
+1. Comentar na issue #47 a URL e o resultado do `curl` da Etapa 4.
+2. Se a URL for diferente de `https://casa-criativa.onrender.com`, avisar na issue: o agente do próximo ciclo corrige README e `docs/MVP.md` por PR.
+3. No GitHub, **About** (engrenagem ao lado do nome do repositório) → **Website**: colar a URL.
+
+### Se decidir não publicar
+
+Comentar na #47 "fica só local" e fechar a issue. O README já diz como rodar localmente.

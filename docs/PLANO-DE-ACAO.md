@@ -125,3 +125,64 @@ Timebox: 40 min (triagem: ciclo completo).
 4. Job `interface` no CI; `docs/MVP.md` com uma tabela só e histórico; README.
 
 **Vira issue.** Seguem abertas #50 e #51 (agente) e #46 e #47 (responsável). Novas: #55 (interface em 375 px) e #56 (responsável: mesclar o ciclo).
+
+## Ciclo de 16/11/2026
+
+> Executado em 16/11/2026. Branch `feature/2026-11-16` → `developer/sprint-2026-11-19` → `master` (o PR para a `master` fica aberto para o responsável). Nível: Estudo (N1), 10 critérios aplicáveis. O ciclo de 07/11 entrou na `master` pelo PR #57.
+
+### Produto
+
+**Problema e público.** Os mesmos: quem está em casa procura e compartilha ideias de atividades.
+
+**Hipótese e meta.** Acreditamos que, com cadastro em até 3 passos e busca por categoria ou por texto, uma pessoa acha uma ideia em até 2 ações. Saberemos quando o teste no navegador, em desktop e em 375 px, cadastrar uma ideia e achá-la pelo filtro e pela busca, com o CI verde.
+
+**O que a análise achou.**
+- O MVP dizia "axe nos modos claro e escuro", mas o CSS não tem `prefers-color-scheme` nem tema escuro. O projeto "escuro" do Playwright repetia a tela clara.
+- `npm ci` falha no Node 24 (Windows): o `better-sqlite3` 11 não tem binário pronto (#51).
+- O `docs/DEPLOY.md` mandava fazer push direto na `master`, citava "8 testes" e um caminho de pasta local. O `.netlify/state.json` segue versionado, embora o documento diga que saiu.
+- O link do Render não respondeu em 16/11/2026 (`curl` sem resposta em 60 s, #47).
+
+**O que a pesquisa trouxe.**
+
+| Ideia | O que levamos para o projeto | Fonte |
+|---|---|---|
+| O `better-sqlite3` 12 declara suporte ao Node 20 a 26 e traz binários prontos para eles | Subir para a 12 (#51) e testar no CI em Node 22 e 24, as versões LTS em uso | [better-sqlite3: releases](https://github.com/WiseLibs/better-sqlite3/releases), [Node.js: Releases](https://nodejs.org/en/about/previous-releases) |
+| WCAG 2.2, critério 1.4.10 (Refluxo): o conteúdo cabe em 320 px de largura sem rolagem nas duas direções | Projeto "celular" (375 × 812) no Playwright, com teste de rolagem horizontal (#55) | [W3C: Understanding Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html), [Playwright: Emulation](https://playwright.dev/docs/emulation) |
+| No SQLite, `%` e `_` são curingas do `LIKE`; `instr()` procura o texto literal | Busca por texto com `instr()` sobre o texto em minúsculas, sem curingas (#50) | [SQLite: Core Functions](https://www.sqlite.org/lang_corefunc.html#instr), [SQLite: LIKE](https://www.sqlite.org/lang_expr.html#like) |
+| Formulário de busca fica num marco `search`, com rótulo visível | Formulário `role="search"` com rótulo "Buscar ideias" | [W3C WAI-ARIA APG: Search Landmark](https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/examples/search.html) |
+
+**Backlog priorizado (impacto × esforço).**
+
+| Prioridade | Item | Impacto | Esforço | Destino |
+|---|---|---|---|---|
+| 1 | Documentação honesta: sem "modo escuro", DEPLOY sem push direto | Alto | Baixo | Este ciclo |
+| 2 | `better-sqlite3` 12 e CI em Node 22 e 24 | Alto | Baixo | Este ciclo (#51) |
+| 3 | Testes de interface em 375 px | Médio | Baixo | Este ciclo (#55) |
+| 4 | Busca por texto na lista | Médio | Baixo | Este ciclo (#50) |
+| 5 | Paginação da lista (hoje corta em 100 sem aviso) | Médio | Médio | Issue nova |
+| 6 | Express 5 e `express-rate-limit` 8 (versões maiores) | Médio | Médio | Issue nova |
+| 7 | Publicar no Render | Médio | Baixo | Responsável (#47) |
+
+**Fora do escopo.** Contas, curtidas, moderação e tema escuro.
+
+### Engenharia
+
+**Arquitetura.** Sem mudança de camadas. O repositório ganha `search(texto, categoria, limite)`, com uma função SQL `dobra()` registrada no `better-sqlite3` (minúsculas em português). A rota `/ideias` aceita `q` e `categoria` juntos.
+
+**Riscos.**
+- Versão maior do `better-sqlite3`: a API usada (`prepare`, `pragma`, `transaction`, `function`) não mudou; os testes de unidade (12 antes, 17 depois) cobrem banco novo e migração de banco legado.
+- O Ubuntu do CI e o Windows local diferem; decide o CI.
+
+**Qualidade.** Testes de unidade para a busca (com resultado, sem resultado, `%` e `_`, maiúsculas e combinada com categoria). No navegador: projetos "desktop" e "celular", fluxo de busca, axe e rolagem horizontal. O app não tem tema escuro próprio; por isso não há projeto escuro.
+
+**Definição de pronto.** `npm test` verde no CI em Node 22 e 24 e `npm run test:e2e` verde no Node 22; `docs/MVP.md`, README e `docs/DEPLOY.md` atualizados; revisão independente feita.
+
+### Plano de ação
+
+**Este ciclo executa.**
+1. `better-sqlite3` 12 e job `raiz-node-24` no CI, à parte do `raiz` porque o ruleset exige esse nome (#51).
+2. Documentação honesta: tirar o projeto "escuro", corrigir MVP, README e `DEPLOY.md`, tirar `.netlify/state.json`.
+3. Projeto "celular" no Playwright, com teste de rolagem horizontal (#55).
+4. Busca por texto na lista, com testes (#50).
+
+**Vira issue.** Paginação da lista (#60), Express 5 (#61), busca sem acento (#62), decisão sobre o `ws.db` versionado (#63) e mesclar o ciclo na `master` (#64, responsável). Segue #47 (responsável).

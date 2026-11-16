@@ -71,3 +71,57 @@ Timebox: 40 min (triagem: ciclo completo).
 **Este ciclo executa.** Itens 1 a 5 do backlog e a revisão do `MVP.md` pela régua N1 e pela decisão do critério 10.
 
 **Vira issue.** #48, #49, #50, #51 (agente); #46, #47 (responsável).
+
+## Ciclo de 07/11/2026
+
+> Executado em 09/11/2026. Branch `feature/2026-11-07` → `developer/sprint-2026-11-12` → `master` (o PR para a `master` fica aberto para o responsável). Nível: Estudo (N1), 10 critérios aplicáveis.
+
+### Produto
+
+**Problema e público.** Os mesmos do ciclo anterior: quem está em casa procura e compartilha ideias de atividades.
+
+**Hipótese e meta.** Adicionar uma ideia em até 3 passos e achá-la pela categoria em 1 clique. Meta do ciclo: provar o fluxo e a acessibilidade no navegador, no CI (#48, #49).
+
+**O que a pesquisa trouxe.**
+
+| Ideia | O que levamos para o projeto | Fonte |
+|---|---|---|
+| Em diálogo modal, o Tab circula só dentro dele; Esc fecha e o foco volta a quem abriu | O modal já fazia Esc e devolvia o foco; faltava prender o Tab. Feito, com teste | [W3C WAI-ARIA APG: Dialog (Modal)](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) |
+| `@axe-core/playwright` é a integração oficial da Deque; o costume é varrer uma lista de rotas e falhar o build com violação | `tests/e2e/axe.spec.js` varre `/`, `/ideias` e 404, e também o modal aberto e com erros | [Deque: axe-core-npm / Playwright](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright), [DEV: axe + Playwright no CI](https://dev.to/subito/how-we-automate-accessibility-testing-with-playwright-and-axe-3ok5) |
+| O `webServer` do Playwright sobe o app antes dos testes e espera uma URL responder | `playwright.config.js` sobe `node src/server.js` com banco novo em pasta temporária e espera `/health` | [Playwright: webServer](https://playwright.dev/docs/test-webserver) |
+
+**Backlog priorizado (impacto × esforço).**
+
+| Prioridade | Item | Impacto | Esforço | Destino |
+|---|---|---|---|---|
+| 1 | Fluxo de cadastro no navegador, no CI | Alto | Médio | Este ciclo (#48) |
+| 2 | axe nas páginas, no CI | Alto | Baixo | Este ciclo (#49) |
+| 3 | Tab preso no modal | Médio | Baixo | Este ciclo |
+| 4 | Busca por texto na lista | Médio | Baixo | #50 |
+| 5 | `better-sqlite3` 12 e branches do Dependabot | Médio | Baixo | #51 |
+| 6 | Proteger a `master` | Alto | Baixo | Responsável (#46) |
+| 7 | Decidir a publicação | Médio | Baixo | Responsável (#47) |
+
+**Fora do escopo.** Contas, curtidas e moderação.
+
+### Engenharia
+
+**Arquitetura.** Sem mudança no app. Testes de interface em `tests/e2e/` (Playwright 1.63, Chromium), fora do `node --test` (que só pega `*.test.js`). Projetos "claro" e "escuro" (`colorScheme`). Pedidos para fora de `localhost` são abortados no teste, para não depender de rede.
+
+**Riscos.**
+- `playwright install --with-deps` no Ubuntu 26.04 pode levar minutos; o job tem `timeout-minutes: 25`.
+- No Windows, com a máquina carregada, o teste do axe na página 404 estourou o tempo em `frame.evaluate` (2 de 20); o mesmo axe rodado à parte na 404 deu 0 violações em 2 s. Decide o CI.
+
+**Qualidade.** 12 testes de unidade e 20 de interface; o job `interface` guarda os traces quando falha.
+
+**Definição de pronto.** `npm test` e `npm run test:e2e` verdes no CI; `docs/MVP.md` e README atualizados.
+
+### Plano de ação
+
+**Este ciclo executa.**
+1. Playwright com fluxo de cadastro, erro de link e teclado no modal (#48).
+2. axe em `/`, `/ideias` e 404, com o modal aberto e com erros (#49).
+3. Tab preso no modal aberto, com teste.
+4. Job `interface` no CI; `docs/MVP.md` com uma tabela só e histórico; README.
+
+**Vira issue.** Seguem abertas #50 e #51 (agente) e #46 e #47 (responsável). Novas: #55 (interface em 375 px) e #56 (responsável: mesclar o ciclo).

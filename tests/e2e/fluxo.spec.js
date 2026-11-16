@@ -84,6 +84,7 @@ test("Tab e Shift+Tab ficam dentro do modal aberto", async ({ page }) => {
   await page.keyboard.press("Shift+Tab");
   await expect(salvar).toBeFocused();
 });
+/* Depende do seed (src/db/connection.js): nenhum título criado nos testes contém "programação" */
 test("busca por texto só com o teclado acha a ideia e avisa quando não acha (#50)", async ({ page }) => {
   await page.goto("/ideias");
   const busca = page.getByRole("search", { name: "Buscar ideias" });

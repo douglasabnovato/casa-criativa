@@ -14,7 +14,7 @@ async function semViolacoes(page) {
   expect(resumo).toEqual([]);
 }
 
-for (const rota of ["/", "/ideias", "/ideias?q=livro", "/ideias?q=xadrez", "/rota-que-nao-existe"]) {
+for (const rota of ["/", "/ideias", "/ideias?q=programa", "/ideias?q=xadrez", "/rota-que-nao-existe"]) {
   test(`axe sem violações em ${rota}`, async ({ page }) => {
     await page.goto(rota);
     await semViolacoes(page);

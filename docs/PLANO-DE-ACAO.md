@@ -170,19 +170,19 @@ Timebox: 40 min (triagem: ciclo completo).
 **Arquitetura.** Sem mudança de camadas. O repositório ganha `search(texto, categoria, limite)`, com uma função SQL `dobra()` registrada no `better-sqlite3` (minúsculas em português). A rota `/ideias` aceita `q` e `categoria` juntos.
 
 **Riscos.**
-- Versão maior do `better-sqlite3`: a API usada (`prepare`, `pragma`, `transaction`, `function`) não mudou; os 12 testes de unidade cobrem banco novo e migração de banco legado.
+- Versão maior do `better-sqlite3`: a API usada (`prepare`, `pragma`, `transaction`, `function`) não mudou; os testes de unidade (12 antes, 17 depois) cobrem banco novo e migração de banco legado.
 - O Ubuntu do CI e o Windows local diferem; decide o CI.
 
 **Qualidade.** Testes de unidade para a busca (com resultado, sem resultado, `%` e `_`, maiúsculas e combinada com categoria). No navegador: projetos "desktop" e "celular", fluxo de busca, axe e rolagem horizontal. O app não tem tema escuro próprio; por isso não há projeto escuro.
 
-**Definição de pronto.** `npm test` e `npm run test:e2e` verdes no CI em Node 22 e 24; `docs/MVP.md`, README e `docs/DEPLOY.md` atualizados; revisão independente feita.
+**Definição de pronto.** `npm test` verde no CI em Node 22 e 24 e `npm run test:e2e` verde no Node 22; `docs/MVP.md`, README e `docs/DEPLOY.md` atualizados; revisão independente feita.
 
 ### Plano de ação
 
 **Este ciclo executa.**
-1. `better-sqlite3` 12 e matriz Node 22 e 24 no CI (#51).
+1. `better-sqlite3` 12 e job `raiz-node-24` no CI, à parte do `raiz` porque o ruleset exige esse nome (#51).
 2. Documentação honesta: tirar o projeto "escuro", corrigir MVP, README e `DEPLOY.md`, tirar `.netlify/state.json`.
 3. Projeto "celular" no Playwright, com teste de rolagem horizontal (#55).
 4. Busca por texto na lista, com testes (#50).
 
-**Vira issue.** Paginação da lista, Express 5, busca sem acento, decisão sobre o `ws.db` versionado e mesclar o ciclo na `master` (responsável). Segue #47 (responsável).
+**Vira issue.** Paginação da lista (#60), Express 5 (#61), busca sem acento (#62), decisão sobre o `ws.db` versionado (#63) e mesclar o ciclo na `master` (#64, responsável). Segue #47 (responsável).

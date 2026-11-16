@@ -84,4 +84,22 @@ test("Tab e Shift+Tab ficam dentro do modal aberto", async ({ page }) => {
   await page.keyboard.press("Shift+Tab");
   await expect(salvar).toBeFocused();
 });
+test("busca por texto só com o teclado acha a ideia e avisa quando não acha (#50)", async ({ page }) => {
+  await page.goto("/ideias");
+  const busca = page.getByRole("search", { name: "Buscar ideias" });
+  const campo = busca.getByRole("searchbox", { name: "Buscar ideias" });
+  await campo.focus();
+  await page.keyboard.type("PROGRAMAÇÃO");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/ideias\?q=PROGRAMA/);
+  await expect(page.getByRole("heading", { name: "Fundamentos de Programação" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Exercícios em casa" })).toHaveCount(0);
+  await expect(campo).toHaveValue("PROGRAMAÇÃO");
+
+  await campo.fill("xadrez");
+  await campo.press("Enter");
+  await expect(page.getByText("Nenhuma ideia encontrada para “xadrez”")).toBeVisible();
+  await page.getByRole("link", { name: "Ver todas" }).click();
+  await expect(page.getByRole("heading", { name: "Exercícios em casa" })).toBeVisible();
+});
 /* Fim de fluxo.spec.js */

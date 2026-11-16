@@ -333,3 +333,11 @@ button.secondary{background:#ffffff22;color:#fff;border:1px solid #fff;grid-colu
 #filtro ul{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;list-style:none;padding:0;margin:24px 0 0}
 #filtro a{display:inline-block;padding:6px 12px;border:1px solid #c2185b;border-radius:16px;color:#a3154d;text-decoration:none;font-size:14px}
 #filtro a[aria-current="page"]{background:#a3154d;color:#fff}
+
+/* Busca por texto (ciclo de 16/11/2026, #50) */
+#busca{max-width:560px;margin:24px auto 0;display:block}
+#busca label{display:block;text-align:center}
+#busca .busca-linha{display:flex;gap:8px;align-items:center}
+#busca input{flex:1;min-width:0;border:1px solid #6b1a33}
+#busca button.button{margin:0;border:0;cursor:pointer;font-family:inherit;flex:none;width:auto;padding:0 20px}
+#busca button.button:hover{background:#075a9c;color:#fff}

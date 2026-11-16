@@ -100,6 +100,67 @@ test("filtro por categoria mostra só a categoria escolhida, com contagem", asyn
   assert.match(vazio.text, /Nenhuma ideia nesta categoria/);
 });
 
+/* Conta os cards de ideia no HTML */
+const cards = (html) => (html.match(/<article class="idea">/g) || []).length;
+
+test("busca por texto acha no título e na descrição, sem diferenciar maiúsculas (#50)", async () => {
+  const { app, ideas } = buildApp();
+  ideas.create({ ...valid, title: "Clube do livro" });
+  ideas.create({ ...valid, title: "Roda de conversa", description: "Contar histórias do LIVRO favorito em família." });
+  ideas.create({ ...valid, title: "Ioga na sala", category: "Saúde", description: "Alongar o corpo ao som de música calma." });
+  const res = await request(app).get("/ideias?q=livro").expect(200);
+  assert.equal(cards(res.text), 2);
+  assert.match(res.text, /Clube do livro/);
+  assert.match(res.text, /Roda de conversa/);
+  assert.doesNotMatch(res.text, /Ioga na sala/);
+  assert.match(res.text, /value="livro"/);
+  /* Maiúsculas acentuadas também (o lower() do SQLite só trata ASCII) */
+  const acento = await request(app).get("/ideias?q=" + encodeURIComponent("MÚSICA")).expect(200);
+  assert.match(acento.text, /Ioga na sala/);
+  const saude = await request(app).get("/ideias?q=" + encodeURIComponent("SAÚDE")).expect(200);
+  assert.equal(cards(saude.text), 0, "a busca não olha a categoria");
+});
+
+test("busca sem resultado mostra aviso e link para ver todas (#50)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias?q=xadrez").expect(200);
+  assert.equal(cards(res.text), 0);
+  assert.match(res.text, /Nenhuma ideia encontrada para “xadrez”/);
+  assert.match(res.text, /<a href="\/ideias">Ver todas<\/a>/);
+});
+
+test("busca trata % e _ como texto, não como curinga (#50)", async () => {
+  const { app, ideas } = buildApp();
+  ideas.create({ ...valid, title: "Desconto de 50% no museu", description: "Visita virtual com 50% de desconto." });
+  ideas.create({ ...valid, title: "Jogo da_velha", description: "Montar um tabuleiro com papel e caneta." });
+  const pct = await request(app).get("/ideias?q=" + encodeURIComponent("%")).expect(200);
+  assert.equal(cards(pct.text), 1);
+  assert.match(pct.text, /Desconto de 50% no museu/);
+  const sub = await request(app).get("/ideias?q=" + encodeURIComponent("_")).expect(200);
+  assert.equal(cards(sub.text), 1);
+  assert.match(sub.text, /Jogo da_velha/);
+});
+
+test("busca combina com o filtro de categoria e o filtro guarda a busca (#50)", async () => {
+  const { app, ideas } = buildApp();
+  ideas.create({ ...valid, title: "Ler poemas", category: "Leitura" });
+  ideas.create({ ...valid, title: "Ler receitas", category: "Cozinha" });
+  const res = await request(app).get("/ideias?q=ler&categoria=cozinha").expect(200);
+  assert.equal(cards(res.text), 1);
+  assert.match(res.text, /Ler receitas/);
+  assert.match(res.text, /name="categoria" value="cozinha"/);
+  assert.match(res.text, /href="\/ideias\?categoria=Leitura&amp;q=ler"/);
+  const vazio = await request(app).get("/ideias?q=poemas&categoria=Cozinha").expect(200);
+  assert.match(vazio.text, /Nenhuma ideia encontrada para “poemas” na categoria Cozinha/);
+});
+
+test("busca só com espaços mostra a lista completa (#50)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias?q=%20%20").expect(200);
+  assert.equal(cards(res.text), 2);
+  assert.match(res.text, /Todas as ideias/);
+});
+
 test("lista de ideias segue a ordem de títulos h1, h2, h3", async () => {
   const { app } = buildApp();
   const res = await request(app).get("/ideias").expect(200);

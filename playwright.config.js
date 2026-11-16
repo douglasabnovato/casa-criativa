@@ -20,8 +20,13 @@ module.exports = defineConfig({
     launchOptions: process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {},
   },
   projects: [
-    { name: "claro", use: { ...devices["Desktop Chrome"], colorScheme: "light" } },
-    { name: "escuro", use: { ...devices["Desktop Chrome"], colorScheme: "dark" } },
+    /* O CSS não tem prefers-color-scheme: o app não tem tema escuro próprio, então não há projeto escuro */
+    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
+    /* Largura de celular (#55) */
+    {
+      name: "celular",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+    },
   ],
   webServer: {
     command: "node src/server.js",

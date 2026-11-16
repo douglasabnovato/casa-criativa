@@ -26,6 +26,21 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  # Mesmos testes no Node 24 (#51). Job à parte, e não matriz, para não mudar
+  # o nome "raiz", que o ruleset da master exige.
+  raiz-node-24:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm audit --omit=dev
+
   interface:
     # Fluxo no navegador e axe (Playwright + Chromium), #48 e #49
     runs-on: ubuntu-latest

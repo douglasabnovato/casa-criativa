@@ -41,11 +41,16 @@ function createApp({ ideas, trustProxy = false }) {
 
   app.get("/ideias", (req, res) => {
     const raw = typeof req.query.categoria === "string" ? req.query.categoria.trim().slice(0, 40) : "";
-    const list = raw ? ideas.byCategory(raw, LIST_LIMIT) : ideas.latest(LIST_LIMIT);
+    const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 80) : "";
+    let list;
+    if (q) list = ideas.search(q, raw, LIST_LIMIT);
+    else if (raw) list = ideas.byCategory(raw, LIST_LIMIT);
+    else list = ideas.latest(LIST_LIMIT);
     res.render("ideias.html", {
       ideas: list,
       categories: ideas.categories(),
       selected: raw,
+      q,
       created: req.query.criada === "1",
     });
   });

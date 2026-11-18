@@ -97,6 +97,11 @@ test("busca por texto só com o teclado acha a ideia e avisa quando não acha (#
   await expect(page.getByRole("heading", { name: "Exercícios em casa" })).toHaveCount(0);
   await expect(campo).toHaveValue("PROGRAMAÇÃO");
 
+  /* Sem acento também acha (#62) */
+  await campo.fill("programacao");
+  await campo.press("Enter");
+  await expect(page.getByRole("heading", { name: "Fundamentos de Programação" })).toBeVisible();
+
   await campo.fill("xadrez");
   await campo.press("Enter");
   await expect(page.getByText("Nenhuma ideia encontrada para “xadrez”")).toBeVisible();

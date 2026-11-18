@@ -2,8 +2,10 @@
 
 /* Cria o repositório sobre uma conexão better-sqlite3 */
 function createIdeaRepository(db) {
-  /* Minúsculas em português (o lower() do SQLite só trata ASCII), para a busca por texto (#50) */
-  db.function("dobra", { deterministic: true }, (texto) => (texto == null ? "" : String(texto).toLocaleLowerCase("pt-BR")));
+  /* Minúsculas em português (o lower() do SQLite só trata ASCII) e sem acentos, para a busca por texto (#50, #62) */
+  db.function("dobra", { deterministic: true }, (texto) =>
+    texto == null ? "" : String(texto).normalize("NFD").replace(/[̀-ͯ]/g, "").toLocaleLowerCase("pt-BR")
+  );
   const latest = db.prepare("SELECT * FROM ideas ORDER BY created_at DESC, id DESC LIMIT ?");
   const insert = db.prepare(
     "INSERT INTO ideas(title, category, image, description, link) VALUES (@title, @category, @image, @description, @link)"

@@ -121,6 +121,24 @@ test("busca por texto acha no título e na descrição, sem diferenciar maiúscu
   assert.equal(cards(saude.text), 0, "a busca não olha a categoria");
 });
 
+test("busca ignora acentos nos dois sentidos (#62)", async () => {
+  const { app, ideas } = buildApp();
+  ideas.create({ ...valid, title: "Ioga na sala", category: "Saúde", description: "Alongar o corpo ao som de música calma." });
+  const semAcento = await request(app).get("/ideias?q=programacao").expect(200);
+  assert.equal(cards(semAcento.text), 1);
+  assert.match(semAcento.text, /Fundamentos de Programação/);
+  const maiuscula = await request(app).get("/ideias?q=" + encodeURIComponent("MÚSICA")).expect(200);
+  assert.match(maiuscula.text, /Ioga na sala/);
+  const semAcentoMusica = await request(app).get("/ideias?q=musica").expect(200);
+  assert.match(semAcentoMusica.text, /Ioga na sala/);
+  /* Acento a mais na busca também casa com o texto sem acento ("exercícios" no seed) */
+  const exercicios = await request(app).get("/ideias?q=" + encodeURIComponent("EXERCÍCIOS")).expect(200);
+  assert.match(exercicios.text, /Exercícios em casa/);
+  const nada = await request(app).get("/ideias?q=" + encodeURIComponent("xadrez açúcar")).expect(200);
+  assert.equal(cards(nada.text), 0);
+  assert.match(nada.text, /Nenhuma ideia encontrada para “xadrez açúcar”/);
+});
+
 test("busca sem resultado mostra aviso e link para ver todas (#50)", async () => {
   const { app } = buildApp();
   const res = await request(app).get("/ideias?q=xadrez").expect(200);

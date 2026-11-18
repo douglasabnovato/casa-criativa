@@ -29,7 +29,8 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: "node src/server.js",
+    /* semear.js deixa a lista com 2 páginas (#60) antes de subir o servidor */
+    command: "node tests/e2e/semear.js && node src/server.js",
     url: `http://localhost:${PORT}/health`,
     reuseExistingServer: false,
     env: { PORT: String(PORT), DATABASE_FILE },

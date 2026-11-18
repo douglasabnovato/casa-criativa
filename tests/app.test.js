@@ -179,6 +179,73 @@ test("busca só com espaços mostra a lista completa (#50)", async () => {
   assert.match(res.text, /Todas as ideias/);
 });
 
+/* Cria 45 ideias ("Ideia 01" a "Ideia 45"); com as 2 do seed, são 47 (3 páginas de 20) */
+function com45Ideias() {
+  const ctx = buildApp();
+  for (let i = 1; i <= 45; i++) {
+    const n = String(i).padStart(2, "0");
+    ctx.ideas.create({ ...valid, title: `Ideia ${n}`, category: i % 2 ? "Leitura" : "Cozinha" });
+  }
+  return ctx;
+}
+
+/* Títulos dos cards, na ordem da página */
+const titulos = (html) => [...html.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1]);
+
+test("lista mostra 20 ideias por página, das mais novas para as mais antigas (#60)", async () => {
+  const { app } = com45Ideias();
+  const p1 = await request(app).get("/ideias").expect(200);
+  assert.equal(cards(p1.text), 20);
+  assert.equal(titulos(p1.text)[0], "Ideia 45");
+  assert.match(p1.text, /<nav id="paginacao" aria-label="Paginação">/);
+  assert.match(p1.text, /Página 1 de 3/);
+  assert.doesNotMatch(p1.text, /rel="prev"/);
+  assert.match(p1.text, /<a href="\/ideias\?pagina=2" rel="next">Próxima<\/a>/);
+
+  const p2 = await request(app).get("/ideias?pagina=2").expect(200);
+  const t2 = titulos(p2.text);
+  assert.equal(t2.length, 20);
+  assert.equal(t2[0], "Ideia 25");
+  assert.equal(t2[19], "Ideia 06");
+  assert.match(p2.text, /<a href="\/ideias" rel="prev">Anterior<\/a>/);
+  assert.match(p2.text, /<a href="\/ideias\?pagina=3" rel="next">Próxima<\/a>/);
+
+  const p3 = await request(app).get("/ideias?pagina=3").expect(200);
+  assert.equal(cards(p3.text), 7);
+  assert.match(p3.text, /Página 3 de 3/);
+  assert.match(p3.text, /Fundamentos de Programação/);
+  assert.doesNotMatch(p3.text, /rel="next"/);
+});
+
+test("paginação guarda a busca e a categoria nos links (#60)", async () => {
+  const { app } = com45Ideias();
+  const res = await request(app).get("/ideias?q=ideia&categoria=Leitura").expect(200);
+  assert.equal(cards(res.text), 20);
+  assert.match(res.text, /Página 1 de 2/);
+  assert.match(res.text, /href="\/ideias\?q=ideia&amp;categoria=Leitura&amp;pagina=2" rel="next"/);
+  const p2 = await request(app).get("/ideias?q=ideia&categoria=Leitura&pagina=2").expect(200);
+  assert.equal(cards(p2.text), 3);
+  assert.match(p2.text, /href="\/ideias\?q=ideia&amp;categoria=Leitura" rel="prev"/);
+});
+
+test("página fora do intervalo ou inválida não dá erro (#60)", async () => {
+  const { app } = com45Ideias();
+  const alta = await request(app).get("/ideias?pagina=999").expect(200);
+  assert.match(alta.text, /Página 3 de 3/);
+  assert.equal(cards(alta.text), 7);
+  for (const valor of ["abc", "0", "-1", "1.5", ""]) {
+    const res = await request(app).get("/ideias?pagina=" + encodeURIComponent(valor)).expect(200);
+    assert.match(res.text, /Página 1 de 3/, `pagina=${valor}`);
+  }
+});
+
+test("lista com uma página só não mostra a paginação (#60)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias?pagina=2").expect(200);
+  assert.equal(cards(res.text), 2);
+  assert.doesNotMatch(res.text, /aria-label="Paginação"/);
+});
+
 test("lista de ideias segue a ordem de títulos h1, h2, h3", async () => {
   const { app } = buildApp();
   const res = await request(app).get("/ideias").expect(200);

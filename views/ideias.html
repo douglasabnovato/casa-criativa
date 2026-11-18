@@ -49,6 +49,13 @@
             {% else %}
                 {% include "idea-list.html" %}
             {% endif %}
+            {% if pagination and pagination.pages > 1 %}
+            <nav id="paginacao" aria-label="Paginação">
+                {% if pagination.prev %}<a href="{{ pagination.prev }}" rel="prev">Anterior</a>{% endif %}
+                <p>Página {{ pagination.current }} de {{ pagination.pages }}</p>
+                {% if pagination.next %}<a href="{{ pagination.next }}" rel="next">Próxima</a>{% endif %}
+            </nav>
+            {% endif %}
         </section>
     </main>
     <footer id="footer">

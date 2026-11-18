@@ -108,4 +108,22 @@ test("busca por texto só com o teclado acha a ideia e avisa quando não acha (#
   await page.getByRole("link", { name: "Ver todas" }).click();
   await expect(page.getByRole("heading", { name: "Exercícios em casa" })).toBeVisible();
 });
+/* Depende de semear.js: 25 ideias antigas, da categoria "Arquivo", deixam a lista com 2 páginas (#60) */
+test("paginação leva à página 2 e volta, guardando a categoria (#60)", async ({ page }) => {
+  await page.goto("/ideias");
+  const paginacao = page.getByRole("navigation", { name: "Paginação" });
+  await expect(paginacao).toContainText("Página 1 de 2");
+  await paginacao.getByRole("link", { name: "Próxima" }).click();
+  await expect(page).toHaveURL(/\/ideias\?pagina=2$/);
+  await expect(paginacao).toContainText("Página 2 de 2");
+  await expect(page.getByRole("heading", { name: "Ideia antiga 01" })).toBeVisible();
+  await paginacao.getByRole("link", { name: "Anterior" }).click();
+  await expect(page).toHaveURL(/\/ideias$/);
+
+  /* Com a categoria, 25 ideias dão 2 páginas, e o link guarda o filtro */
+  await page.getByRole("navigation", { name: "Filtrar por categoria" }).getByRole("link", { name: /^Arquivo/ }).click();
+  await paginacao.getByRole("link", { name: "Próxima" }).click();
+  await expect(page).toHaveURL(/\/ideias\?categoria=Arquivo&pagina=2$/);
+  await expect(page.locator("article.idea")).toHaveCount(5);
+});
 /* Fim de fluxo.spec.js */

@@ -1,13 +1,46 @@
 # MVP — casa-criativa
 
-> Criado em 02/11/2026. Revisto em 16/11/2026 (ciclo de 16/11/2026). **Nível: Estudo (N1).** Os critérios 5 e 7 não se aplicam ao N1 e saem da conta. Testado no Windows com Node 24.22.1 e no CI com Node 22 e 24 no `ubuntu-latest`. Não houve teste com pessoas nem em aparelho real. O app não tem tema escuro próprio (o CSS não tem `prefers-color-scheme`), então não há teste em modo escuro.
+> Criado em 02/11/2026. Revisto em 18/11/2026 (ciclo de 18/11/2026). **Nível: Estudo (N1).** Os critérios 5 e 7 não se aplicam ao N1 e saem da conta. Testado no Windows com Node 24.22.1 e no CI com Node 22 e 24 no `ubuntu-latest`. Não houve teste com pessoas nem em aparelho real. O app não tem tema escuro próprio (o CSS não tem `prefers-color-scheme`), então não há teste em modo escuro.
 
 **Resumo:** 10 de 10 aplicáveis atendidos
 **Finalizado:** sim
 
-Antes deste ciclo, pela mesma régua: 10 de 10. Os critérios 3 e 8 diziam "modos claro e escuro", mas o projeto "escuro" repetia a tela clara; o texto foi corrigido e o projeto virou "celular" (375 px).
+Antes deste ciclo, pela mesma régua: 10 de 10. Nenhum critério mudou de situação; as evidências dos critérios 3, 6, 8, 9, 10, 11 e 12 foram refeitas com a paginação, a busca sem acentos e o Express 5.
 
-## Critérios (16/11/2026)
+## Critérios (18/11/2026)
+
+| # | Critério | Como verificar | Situação | Evidência e data |
+|---|---|---|---|---|
+| 1 | Problema e público claros | Dá para explicar em uma frase | Atende: quem está em casa acha e compartilha ideias de atividades. | README, seção "Problema e proposta", 16/11/2026 |
+| 2 | Hipótese a validar | Existe uma aposta escrita, com meta | Atende: seção "Hipótese", com meta e "saberemos quando"; sem validação com pessoas. | Este arquivo, 16/11/2026 |
+| 3 | Fluxo principal completo | Uma pessoa conclui sem ajuda | Atende: no navegador (Chromium, Playwright 1.63), em 1280 px e em 375 px, o teste abre o modal por "+ Adicionar ideia", preenche os 5 campos, salva, vê "Ideia cadastrada" e o título em `/ideias`, cadastra uma segunda categoria e acha a ideia pelo filtro; acha uma ideia pela busca por texto só com o teclado, também sem acento ("programacao"); vai à página 2 da lista e volta, também com a categoria; link `javascript:` mostra o erro no campo com foco nele. | `npm run test:e2e` no job `interface` do run [44407684179](https://github.com/douglasabnovato/casa-criativa/actions/runs/44407684179) (PR #66) e local, 40 de 40, 18/11/2026 |
+| 4 | Escopo enxuto | O que não entra está registrado | Atende: seção "Fora do MVP". | Este arquivo, 16/11/2026 |
+| 5 | Medição de uso | A métrica principal é coletada | Não se aplica (N1). | Decisão 2 do processo |
+| 6 | Falhas tratadas | Erro, vazio e carregamento têm resposta clara | Atende: 404, 500 (banco que falha), lista vazia, filtro sem resultado, busca sem resultado, página fora do intervalo (`?pagina=999` e `?pagina=abc`), POST sem corpo (422) e 11º envio no minuto (429) com teste; no navegador, envio inválido não sai e o foco vai ao campo com erro. A página é renderizada no servidor, sem estado de carregamento no cliente. | `npm test` 26 de 26 e `npm run test:e2e` 40 de 40, run [44407684179](https://github.com/douglasabnovato/casa-criativa/actions/runs/44407684179), 18/11/2026 |
+| 7 | Desempenho aceitável | LCP de até 2,5 s no celular | Não se aplica (N1). | Decisão 2 do processo |
+| 8 | Acessibilidade básica | axe e teclado | Atende: axe (todas as regras, qualquer gravidade) sem violações em `/`, `/ideias`, `/ideias?pagina=2`, busca com e sem resultado e 404, com o modal fechado, aberto e com erros, em 1280 px e em 375 px; sem rolagem horizontal nas duas larguras; Tab e Shift+Tab ficam dentro do modal; Esc devolve o foco. O app não tem tema escuro próprio. | `tests/e2e/axe.spec.js`, `fluxo.spec.js` e `layout.spec.js` no run [44407684179](https://github.com/douglasabnovato/casa-criativa/actions/runs/44407684179), 18/11/2026 |
+| 9 | Segurança e conformidade | Riscos decididos | Atende: Express 5 e `express-rate-limit` 8 (#61); `npm audit --omit=dev` com 0 vulnerabilidades (local e no job `raiz-node-24`); 0 alertas abertos do Dependabot; `ws.db` sem dado pessoal, mantido como exemplo de migração (ADR-006, #63); CSP do `helmet`; só links `http(s)`; nenhum segredo no código. | `npm audit --omit=dev` e `gh api repos/douglasabnovato/casa-criativa/dependabot/alerts?state=open` (0), 18/11/2026 |
+| 10 | Entrega confiável | CI verde antes de entrar na principal | Atende: o workflow `CI` roda em PR e push para `master` e `developer/**`; a `master` está protegida (exige PR e os checks `raiz` e `interface`, bloqueia force push e exclusão). | `gh api repos/douglasabnovato/casa-criativa/rules/branches/master`: `deletion`, `non_fast_forward`, `pull_request` e `required_status_checks`, 18/11/2026 |
+| 11 | Testes dos fluxos críticos | Testes automatizados no CI | Atende: 26 testes de unidade (Node 22 e 24) e 40 de interface (20 por largura) no CI, sem `skipped`. | Run [44407684179](https://github.com/douglasabnovato/casa-criativa/actions/runs/44407684179), `# skipped 0`, 18/11/2026 |
+| 12 | Documentação honesta | O README ensina a rodar | Atende: comandos conferidos com o `package.json` (`npm test`, `npm run test:e2e`, `npm run dev`); `docs/DEPLOY.md` revisto; README ensina a abrir uma cópia do `ws.db`; link publicado fora do README porque não respondeu. | README e `docs/DEPLOY.md`, 18/11/2026 |
+
+## Hipótese
+
+Acreditamos que, com cadastro em até 3 passos e busca por categoria ou por texto, uma pessoa acha uma ideia em até 2 ações (digitar e Enter, ou 1 clique no filtro). Saberemos quando o teste no navegador, em 1280 px e em 375 px, cadastrar uma ideia e achá-la pelo filtro e pela busca, com o CI verde. Meta de estudo: praticar Node com SQLite; não há teste com pessoas.
+
+## Fora do MVP
+
+Contas, curtidas, moderação, tema escuro e banco persistente na hospedagem.
+
+## Neste ciclo (18/11/2026)
+
+Paginação da lista, 20 por página (#60); Express 5 e `express-rate-limit` 8 (#61); busca sem diferenciar acentos (#62); `ws.db` mantido como exemplo de migração, com teste (#63). PR #66, na sprint.
+
+Ciclo anterior (16/11/2026): `better-sqlite3` 12 e CI também no Node 24 (#51), testes de interface em 375 px (#55), busca por texto (#50), `docs/DEPLOY.md` revisto. Detalhes em [PLANO-DE-ACAO.md](PLANO-DE-ACAO.md), seção "Ciclo de 16/11/2026".
+
+## Histórico
+
+### Tabela de 16/11/2026 (ciclo de 16/11/2026): 10 de 10 aplicáveis atendidos
 
 | # | Critério | Como verificar | Situação | Evidência e data |
 |---|---|---|---|---|
@@ -23,20 +56,6 @@ Antes deste ciclo, pela mesma régua: 10 de 10. Os critérios 3 e 8 diziam "modo
 | 10 | Entrega confiável | CI verde antes de entrar na principal | Atende: o workflow `CI` roda em PR e push para `master` e `developer/**`; a `master` está protegida (exige PR e os checks `raiz` e `interface`, bloqueia force push e exclusão). | `gh api repos/douglasabnovato/casa-criativa/rulesets/26932508`: ruleset `principal-protegida` ativo, 16/11/2026 |
 | 11 | Testes dos fluxos críticos | Testes automatizados no CI | Atende: 17 testes de unidade (Node 22 e 24) e 36 de interface (18 por largura) no CI, sem `skipped`. | Run [43802116381](https://github.com/douglasabnovato/casa-criativa/actions/runs/43802116381), 16/11/2026 |
 | 12 | Documentação honesta | O README ensina a rodar | Atende: comandos conferidos com o `package.json` (`npm test`, `npm run test:e2e`, `npm run dev`); `docs/DEPLOY.md` revisto; link publicado fora do README porque não respondeu. | README e `docs/DEPLOY.md`, 16/11/2026 |
-
-## Hipótese
-
-Acreditamos que, com cadastro em até 3 passos e busca por categoria ou por texto, uma pessoa acha uma ideia em até 2 ações (digitar e Enter, ou 1 clique no filtro). Saberemos quando o teste no navegador, em 1280 px e em 375 px, cadastrar uma ideia e achá-la pelo filtro e pela busca, com o CI verde. Meta de estudo: praticar Node com SQLite; não há teste com pessoas.
-
-## Fora do MVP
-
-Contas, curtidas, moderação, tema escuro e banco persistente na hospedagem.
-
-## Neste ciclo (16/11/2026)
-
-`better-sqlite3` 12 e CI também no Node 24 (#51), testes de interface em 375 px (#55), busca por texto (#50), `docs/DEPLOY.md` revisto. Detalhes em [PLANO-DE-ACAO.md](PLANO-DE-ACAO.md), seção "Ciclo de 16/11/2026".
-
-## Histórico
 
 ### Tabela de 09/11/2026 (ciclo de 07/11/2026): 10 de 10 aplicáveis atendidos
 

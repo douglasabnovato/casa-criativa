@@ -66,7 +66,14 @@ npx playwright install chromium   # uma vez
 npm run test:e2e       # 36 testes no navegador (fluxo, axe e layout, em 1280 px e 375 px)
 ```
 
-Para reaproveitar as ideias do banco antigo, use `DATABASE_FILE=./ws.db` na primeira execução: a migration converte a tabela e descarta linhas inválidas.
+O `ws.db` é o banco da versão do workshop, mantido como exemplo de migração (ADR-006 em [docs/ARQUITETURA.md](docs/ARQUITETURA.md)). Para ver as ideias dele, abra uma cópia, porque a migração altera o arquivo aberto:
+
+```sh
+mkdir -p data && cp ws.db data/antigo.sqlite
+DATABASE_FILE=./data/antigo.sqlite npm run dev
+```
+
+A migração converte a tabela e descarta as linhas inválidas.
 
 ## Publicação
 

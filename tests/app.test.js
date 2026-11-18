@@ -34,6 +34,30 @@ test("banco novo cria tabela e semeia 2 ideias", () => {
   assert.equal(ideas.count(), 2);
 });
 
+test("banco antigo ws.db migra para o esquema atual (#63)", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const path = require("path");
+  const original = path.join(__dirname, "..", "ws.db");
+  const antes = fs.readFileSync(original);
+  const pasta = fs.mkdtempSync(path.join(os.tmpdir(), "casa-criativa-wsdb-"));
+  const copia = path.join(pasta, "antigo.sqlite");
+  fs.copyFileSync(original, copia);
+  const db = openDatabase(copia);
+  try {
+    assert.equal(db.pragma("user_version", { simple: true }), 2);
+    const linhas = db.prepare("SELECT title, category, created_at FROM ideas ORDER BY id").all();
+    assert.deepEqual(linhas.map((l) => l.title), ["Criar um site de colaboração", "Criar ensino de programação"]);
+    assert.ok(linhas.every((l) => l.created_at), "a migração preenche created_at");
+    const ideas = createIdeaRepository(db);
+    assert.equal(ideas.total({ texto: "programacao" }), 1);
+  } finally {
+    db.close();
+    fs.rmSync(pasta, { recursive: true, force: true });
+  }
+  assert.ok(fs.readFileSync(original).equals(antes), "o ws.db do repositório não muda");
+});
+
 test("home mostra no máximo as 2 últimas ideias", async () => {
   const { app, ideas } = buildApp();
   ideas.create({ ...valid, title: "Terceira ideia" });

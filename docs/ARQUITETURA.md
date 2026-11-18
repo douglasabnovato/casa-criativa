@@ -14,7 +14,7 @@ flowchart LR
 
 | Contêiner | Tecnologia | Responsabilidade |
 |---|---|---|
-| Web + API | Node 20, Express 4, Nunjucks (SSR) | Rotas, validação, renderização |
+| Web + API | Node 22 e 24, Express 5, Nunjucks (SSR) | Rotas, validação, renderização |
 | Banco | SQLite (better-sqlite3), arquivo em `data/` | Ideias |
 | Hospedagem | Render Web Service (gratuito) + disco | Execução |
 

@@ -58,6 +58,28 @@ test("banco antigo ws.db migra para o esquema atual (#63)", () => {
   assert.ok(fs.readFileSync(original).equals(antes), "o ws.db do repositório não muda");
 });
 
+test("limite de 10 envios por minuto: o 11º recebe 429 (#61)", async () => {
+  const { app } = buildApp();
+  const agente = request.agent(app);
+  for (let i = 1; i <= 10; i++) {
+    await agente.post("/ideias").type("form").send({ ...valid, title: `Envio ${i}` }).expect(303);
+  }
+  const res = await agente.post("/ideias").type("form").send({ ...valid, title: "Envio 11" }).expect(429);
+  assert.ok(res.headers["ratelimit-policy"] || res.headers.ratelimit, "cabeçalho RateLimit padrão");
+});
+
+test("envio sem corpo responde 422 com os erros, sem 500 (#61)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).post("/ideias").expect(422);
+  assert.match(res.text, /id="erro-title"/);
+});
+
+test("parâmetro repetido na URL não quebra a lista (#61)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias?q=a&q=b&categoria=x&categoria=y&pagina=1&pagina=2").expect(200);
+  assert.equal(cards(res.text), 2);
+});
+
 test("home mostra no máximo as 2 últimas ideias", async () => {
   const { app, ideas } = buildApp();
   ideas.create({ ...valid, title: "Terceira ideia" });

@@ -53,7 +53,7 @@ Quem passa longos períodos em casa procura o que fazer. A Casa Criativa reúne 
 
 ## Stack
 
-Node 22 e 24 · Express 4 · Nunjucks · SQLite (better-sqlite3) · helmet · node:test + supertest · Playwright + axe-core.
+Node 22 e 24 · Express 5 · Nunjucks · SQLite (better-sqlite3) · helmet · node:test + supertest · Playwright + axe-core.
 
 ## Como rodar
 

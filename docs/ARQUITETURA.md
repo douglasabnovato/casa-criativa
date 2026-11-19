@@ -14,7 +14,7 @@ flowchart LR
 
 | Contêiner | Tecnologia | Responsabilidade |
 |---|---|---|
-| Web + API | Node 20, Express 4, Nunjucks (SSR) | Rotas, validação, renderização |
+| Web + API | Node 22 e 24, Express 5, Nunjucks (SSR) | Rotas, validação, renderização |
 | Banco | SQLite (better-sqlite3), arquivo em `data/` | Ideias |
 | Hospedagem | Render Web Service (gratuito) + disco | Execução |
 
@@ -43,6 +43,8 @@ src/
 views/                   Nunjucks (layout, index, ideias, idea-list, modal, error)
 public/                  CSS, script do modal, imagens
 tests/app.test.js        node:test + supertest
+tests/e2e/               Playwright + axe; semear.js prepara o banco
+ws.db                    banco do workshop, exemplo de migração (ADR-006)
 ```
 
 ## 3. Modelo de dados
@@ -62,7 +64,7 @@ tests/app.test.js        node:test + supertest
 | Rota | Resposta |
 |---|---|
 | `GET /` | 200 — 2 ideias mais recentes |
-| `GET /ideias` | 200 — até 100 ideias; `?criada=1` mostra confirmação |
+| `GET /ideias` | 200 — 20 ideias por página (`?pagina=N`), com `?q=` e `?categoria=`; `?criada=1` mostra confirmação |
 | `POST /ideias` (também `/`) | 303 → `/ideias?criada=1` · 422 com erros por campo · 429 acima de 10/min |
 | `GET /health` | 200 `{ status, ideas }` |
 | Outras | 404 página própria · 500 página própria |
@@ -74,6 +76,7 @@ tests/app.test.js        node:test + supertest
 - **ADR-003 — PRG (Post/Redirect/Get) com 303.** Evita reenvio ao atualizar a página e permite mostrar a confirmação.
 - **ADR-004 — Migração que preserva dados válidos.** `ideas_v2` copia só linhas que passam nas novas regras; o restante é descartado de forma explícita.
 - **ADR-005 — Render em vez de Netlify.** Netlify serve sites estáticos/funções; um servidor Express com SQLite precisa de um processo contínuo.
+- **ADR-006 — `ws.db` fica no repositório como exemplo de migração (18/11/2026, #63).** É o banco da versão do workshop (12 KB, 2 ideias, sem dado pessoal, `user_version` 0). Fica versionado porque mostra a migração da ADR-004 com dados reais: o teste `banco antigo ws.db migra para o esquema atual` abre uma cópia e confere as 2 ideias. O `.gitignore` deixou de listar `ws.db`, para não dizer que ele está fora. Para usar, copie antes (`cp ws.db data/antigo.sqlite`): a migração altera o arquivo aberto. Tirar o arquivo (`git rm --cached ws.db`) continua possível; apagar do histórico do Git é decisão do responsável.
 
 ## 6. Fora do escopo
 

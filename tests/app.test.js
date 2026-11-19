@@ -34,6 +34,52 @@ test("banco novo cria tabela e semeia 2 ideias", () => {
   assert.equal(ideas.count(), 2);
 });
 
+test("banco antigo ws.db migra para o esquema atual (#63)", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const path = require("path");
+  const original = path.join(__dirname, "..", "ws.db");
+  const antes = fs.readFileSync(original);
+  const pasta = fs.mkdtempSync(path.join(os.tmpdir(), "casa-criativa-wsdb-"));
+  const copia = path.join(pasta, "antigo.sqlite");
+  fs.copyFileSync(original, copia);
+  const db = openDatabase(copia);
+  try {
+    assert.equal(db.pragma("user_version", { simple: true }), 2);
+    const linhas = db.prepare("SELECT title, category, created_at FROM ideas ORDER BY id").all();
+    assert.deepEqual(linhas.map((l) => l.title), ["Criar um site de colaboração", "Criar ensino de programação"]);
+    assert.ok(linhas.every((l) => l.created_at), "a migração preenche created_at");
+    const ideas = createIdeaRepository(db);
+    assert.equal(ideas.total({ texto: "programacao" }), 1);
+  } finally {
+    db.close();
+    fs.rmSync(pasta, { recursive: true, force: true });
+  }
+  assert.ok(fs.readFileSync(original).equals(antes), "o ws.db do repositório não muda");
+});
+
+test("limite de 10 envios por minuto: o 11º recebe 429 (#61)", async () => {
+  const { app } = buildApp();
+  const agente = request.agent(app);
+  for (let i = 1; i <= 10; i++) {
+    await agente.post("/ideias").type("form").send({ ...valid, title: `Envio ${i}` }).expect(303);
+  }
+  const res = await agente.post("/ideias").type("form").send({ ...valid, title: "Envio 11" }).expect(429);
+  assert.ok(res.headers["ratelimit-policy"] || res.headers.ratelimit, "cabeçalho RateLimit padrão");
+});
+
+test("envio sem corpo responde 422 com os erros, sem 500 (#61)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).post("/ideias").expect(422);
+  assert.match(res.text, /id="erro-title"/);
+});
+
+test("parâmetro repetido na URL não quebra a lista (#61)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias?q=a&q=b&categoria=x&categoria=y&pagina=1&pagina=2").expect(200);
+  assert.equal(cards(res.text), 2);
+});
+
 test("home mostra no máximo as 2 últimas ideias", async () => {
   const { app, ideas } = buildApp();
   ideas.create({ ...valid, title: "Terceira ideia" });
@@ -121,6 +167,24 @@ test("busca por texto acha no título e na descrição, sem diferenciar maiúscu
   assert.equal(cards(saude.text), 0, "a busca não olha a categoria");
 });
 
+test("busca ignora acentos nos dois sentidos (#62)", async () => {
+  const { app, ideas } = buildApp();
+  ideas.create({ ...valid, title: "Ioga na sala", category: "Saúde", description: "Alongar o corpo ao som de música calma." });
+  const semAcento = await request(app).get("/ideias?q=programacao").expect(200);
+  assert.equal(cards(semAcento.text), 1);
+  assert.match(semAcento.text, /Fundamentos de Programação/);
+  const maiuscula = await request(app).get("/ideias?q=" + encodeURIComponent("MÚSICA")).expect(200);
+  assert.match(maiuscula.text, /Ioga na sala/);
+  const semAcentoMusica = await request(app).get("/ideias?q=musica").expect(200);
+  assert.match(semAcentoMusica.text, /Ioga na sala/);
+  /* Acento a mais na busca também casa com o texto sem acento ("exercícios" no seed) */
+  const exercicios = await request(app).get("/ideias?q=" + encodeURIComponent("EXERCÍCIOS")).expect(200);
+  assert.match(exercicios.text, /Exercícios em casa/);
+  const nada = await request(app).get("/ideias?q=" + encodeURIComponent("xadrez açúcar")).expect(200);
+  assert.equal(cards(nada.text), 0);
+  assert.match(nada.text, /Nenhuma ideia encontrada para “xadrez açúcar”/);
+});
+
 test("busca sem resultado mostra aviso e link para ver todas (#50)", async () => {
   const { app } = buildApp();
   const res = await request(app).get("/ideias?q=xadrez").expect(200);
@@ -159,6 +223,73 @@ test("busca só com espaços mostra a lista completa (#50)", async () => {
   const res = await request(app).get("/ideias?q=%20%20").expect(200);
   assert.equal(cards(res.text), 2);
   assert.match(res.text, /Todas as ideias/);
+});
+
+/* Cria 45 ideias ("Ideia 01" a "Ideia 45"); com as 2 do seed, são 47 (3 páginas de 20) */
+function com45Ideias() {
+  const ctx = buildApp();
+  for (let i = 1; i <= 45; i++) {
+    const n = String(i).padStart(2, "0");
+    ctx.ideas.create({ ...valid, title: `Ideia ${n}`, category: i % 2 ? "Leitura" : "Cozinha" });
+  }
+  return ctx;
+}
+
+/* Títulos dos cards, na ordem da página */
+const titulos = (html) => [...html.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1]);
+
+test("lista mostra 20 ideias por página, das mais novas para as mais antigas (#60)", async () => {
+  const { app } = com45Ideias();
+  const p1 = await request(app).get("/ideias").expect(200);
+  assert.equal(cards(p1.text), 20);
+  assert.equal(titulos(p1.text)[0], "Ideia 45");
+  assert.match(p1.text, /<nav id="paginacao" aria-label="Paginação">/);
+  assert.match(p1.text, /Página 1 de 3/);
+  assert.doesNotMatch(p1.text, /rel="prev"/);
+  assert.match(p1.text, /<a href="\/ideias\?pagina=2" rel="next">Próxima<\/a>/);
+
+  const p2 = await request(app).get("/ideias?pagina=2").expect(200);
+  const t2 = titulos(p2.text);
+  assert.equal(t2.length, 20);
+  assert.equal(t2[0], "Ideia 25");
+  assert.equal(t2[19], "Ideia 06");
+  assert.match(p2.text, /<a href="\/ideias" rel="prev">Anterior<\/a>/);
+  assert.match(p2.text, /<a href="\/ideias\?pagina=3" rel="next">Próxima<\/a>/);
+
+  const p3 = await request(app).get("/ideias?pagina=3").expect(200);
+  assert.equal(cards(p3.text), 7);
+  assert.match(p3.text, /Página 3 de 3/);
+  assert.match(p3.text, /Fundamentos de Programação/);
+  assert.doesNotMatch(p3.text, /rel="next"/);
+});
+
+test("paginação guarda a busca e a categoria nos links (#60)", async () => {
+  const { app } = com45Ideias();
+  const res = await request(app).get("/ideias?q=ideia&categoria=Leitura").expect(200);
+  assert.equal(cards(res.text), 20);
+  assert.match(res.text, /Página 1 de 2/);
+  assert.match(res.text, /href="\/ideias\?q=ideia&amp;categoria=Leitura&amp;pagina=2" rel="next"/);
+  const p2 = await request(app).get("/ideias?q=ideia&categoria=Leitura&pagina=2").expect(200);
+  assert.equal(cards(p2.text), 3);
+  assert.match(p2.text, /href="\/ideias\?q=ideia&amp;categoria=Leitura" rel="prev"/);
+});
+
+test("página fora do intervalo ou inválida não dá erro (#60)", async () => {
+  const { app } = com45Ideias();
+  const alta = await request(app).get("/ideias?pagina=999").expect(200);
+  assert.match(alta.text, /Página 3 de 3/);
+  assert.equal(cards(alta.text), 7);
+  for (const valor of ["abc", "0", "-1", "1.5", ""]) {
+    const res = await request(app).get("/ideias?pagina=" + encodeURIComponent(valor)).expect(200);
+    assert.match(res.text, /Página 1 de 3/, `pagina=${valor}`);
+  }
+});
+
+test("lista com uma página só não mostra a paginação (#60)", async () => {
+  const { app } = buildApp();
+  const res = await request(app).get("/ideias?pagina=2").expect(200);
+  assert.equal(cards(res.text), 2);
+  assert.doesNotMatch(res.text, /aria-label="Paginação"/);
 });
 
 test("lista de ideias segue a ordem de títulos h1, h2, h3", async () => {

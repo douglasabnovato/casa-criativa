@@ -4,6 +4,7 @@ data/
 *.sqlite-wal
 *.sqlite-shm
 .env
-ws.db*
+*.db-wal
+*.db-shm
 test-results/
 playwright-report/

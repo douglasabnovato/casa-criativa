@@ -6,7 +6,41 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { validateIdea } = require("./lib/ideaValidation");
 
-const LIST_LIMIT = 100;
+/* Ideias por página em /ideias (#60) */
+const PAGE_SIZE = 20;
+
+/* Lê ?pagina=N: inteiro de 1 em diante; o resto vira 1 */
+function parsePage(value) {
+  const n = typeof value === "string" && /^\d{1,6}$/.test(value) ? Number(value) : 1;
+  return n >= 1 ? n : 1;
+}
+
+/* Monta o href de /ideias guardando a busca, a categoria e a página */
+function listHref({ q, categoria, pagina }) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (categoria) params.set("categoria", categoria);
+  if (pagina > 1) params.set("pagina", String(pagina));
+  const query = params.toString();
+  return query ? `/ideias?${query}` : "/ideias";
+}
+
+/* Busca uma página da lista; página acima da última mostra a última (#60) */
+function listPage(ideas, { q = "", categoria = "", pagina = 1 } = {}) {
+  const total = ideas.total({ texto: q, categoria });
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const current = Math.min(pagina, pages);
+  const list = ideas.page({ texto: q, categoria, limit: PAGE_SIZE, offset: (current - 1) * PAGE_SIZE });
+  return {
+    ideas: list,
+    pagination: {
+      current,
+      pages,
+      prev: current > 1 ? listHref({ q, categoria, pagina: current - 1 }) : null,
+      next: current < pages ? listHref({ q, categoria, pagina: current + 1 }) : null,
+    },
+  };
+}
 
 /* Monta o app recebendo o repositório por injeção de dependência */
 function createApp({ ideas, trustProxy = false }) {
@@ -42,12 +76,8 @@ function createApp({ ideas, trustProxy = false }) {
   app.get("/ideias", (req, res) => {
     const raw = typeof req.query.categoria === "string" ? req.query.categoria.trim().slice(0, 40) : "";
     const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 80) : "";
-    let list;
-    if (q) list = ideas.search(q, raw, LIST_LIMIT);
-    else if (raw) list = ideas.byCategory(raw, LIST_LIMIT);
-    else list = ideas.latest(LIST_LIMIT);
     res.render("ideias.html", {
-      ideas: list,
+      ...listPage(ideas, { q, categoria: raw, pagina: parsePage(req.query.pagina) }),
       categories: ideas.categories(),
       selected: raw,
       q,
@@ -59,7 +89,7 @@ function createApp({ ideas, trustProxy = false }) {
     const { value, errors } = validateIdea(req.body);
     if (Object.keys(errors).length > 0) {
       return res.status(422).render("ideias.html", {
-        ideas: ideas.latest(LIST_LIMIT),
+        ...listPage(ideas),
         categories: ideas.categories(),
         form: value,
         errors,
